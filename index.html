@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de Estudio · Hiperparámetros del Transformer</title>
+<style>
+  :root{
+    --bg:#0F0A1F;
+    --bg-panel:#17112B;
+    --ink:#EDEAF7;
+    --muted:#9C93B8;
+    --antes:#8A8FA3;
+    --antes-soft:#23202F;
+    --despues:#00C2D1;
+    --despues-soft:#0E2C30;
+    --capacidad:#FFB454;
+    --optimizacion:#7CC9FF;
+    --regularizacion:#FF8FB1;
+    --line:#2A2440;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 0%, #241A3F 0%, transparent 45%),
+      radial-gradient(circle at 90% 10%, #1B2C3B 0%, transparent 40%),
+      var(--bg);
+    color:var(--ink);
+    font-family: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:56px 24px 100px;}
+
+  header{margin-bottom:40px;}
+  .eyebrow{
+    font-family:"Courier New",Consolas,monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--despues);
+    margin:0 0 14px;
+  }
+  h1{
+    font-size:clamp(28px,4.4vw,44px);
+    line-height:1.08;
+    margin:0 0 14px;
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+  h1 em{color:var(--despues);font-style:normal;}
+  .subtitle{
+    font-family:Arial,Helvetica,sans-serif;
+    color:var(--muted);
+    font-size:15.5px;
+    max-width:640px;
+    margin:0;
+  }
+
+  /* result strip */
+  .result-strip{
+    margin:36px 0 44px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 24px;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .result-strip .num{
+    font-family:"Courier New",monospace;
+    font-weight:700;
+    font-size:30px;
+  }
+  .result-strip .num.antes{color:var(--antes);}
+  .result-strip .num.despues{color:var(--despues);}
+  .arrow{color:var(--muted);font-size:22px;}
+  .result-strip .label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .delta{
+    margin-left:auto;
+    background:var(--despues-soft);
+    color:var(--despues);
+    font-family:"Courier New",monospace;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:13px;
+    white-space:nowrap;
+  }
+
+  /* quick list */
+  .quicklist{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 26px;
+    font-family:Arial,Helvetica,sans-serif;
+    margin-bottom:8px;
+  }
+  .quicklist > p{
+    margin:0 0 14px;
+    font-size:14.5px;
+    color:var(--muted);
+  }
+  .quicklist ol{
+    margin:0;
+    padding-left:22px;
+  }
+  .quicklist li{
+    font-size:15px;
+    color:#D8D3EA;
+    padding:7px 0;
+  }
+  .quicklist li b{color:var(--despues);}
+  .quicklist code{
+    background:var(--antes-soft);
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:1px 6px;
+    font-family:"Courier New",monospace;
+    font-size:13.5px;
+    color:var(--ink);
+  }
+  .quicklist .note{
+    margin:14px 0 0;
+    font-size:13px;
+    color:var(--muted);
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  .quicklist .note code{font-size:12.5px;}
+
+  /* legend */
+  .legend{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:12.5px;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:7px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .dot.capacidad{background:var(--capacidad);}
+  .dot.optimizacion{background:var(--optimizacion);}
+  .dot.regularizacion{background:var(--regularizacion);}
+
+  /* cards */
+  .grid{display:grid;gap:14px;}
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--cat-color, var(--despues));
+    border-radius:12px;
+    padding:0;
+    overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .card-head{
+    width:100%;
+    background:none;
+    border:none;
+    text-align:left;
+    color:inherit;
+    font:inherit;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:18px 20px;
+  }
+  .card-head:hover{background:rgba(255,255,255,.02);}
+  .tag{
+    font-family:"Courier New",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--cat-color);
+    border:1px solid var(--cat-color);
+    border-radius:999px;
+    padding:3px 9px;
+    flex-shrink:0;
+  }
+  .hp-name{
+    font-weight:600;
+    font-size:17px;
+    flex-shrink:0;
+  }
+  .hp-change{
+    font-family:"Courier New",monospace;
+    font-size:13.5px;
+    color:var(--muted);
+    margin-left:auto;
+    text-align:right;
+    padding-right:8px;
+  }
+  .hp-change .a{color:var(--antes);}
+  .hp-change .d{color:var(--despues);font-weight:700;}
+  .chev{
+    font-size:13px;
+    color:var(--muted);
+    transition:transform .25s ease;
+    flex-shrink:0;
+  }
+  .card.open .chev{transform:rotate(90deg);}
+  .card-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .3s ease;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .card.open .card-body{max-height:600px;}
+  .card-body-inner{
+    padding:0 20px 22px 20px;
+    font-size:14.5px;
+    color:#D8D3EA;
+  }
+  .card-body-inner p{margin:0 0 10px;}
+  .card-body-inner p:last-child{margin-bottom:0;}
+  .card-body-inner .why{
+    margin-top:12px;
+    background:var(--antes-soft);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:13.5px;
+    color:var(--muted);
+    border-left:3px solid var(--cat-color);
+  }
+  .card-body-inner .why b{color:var(--ink);}
+
+  /* section headers */
+  .section-title{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--muted);
+    font-family:Arial,Helvetica,sans-serif;
+    margin:54px 0 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .section-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  /* feedback box */
+  .feedback{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 26px;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .feedback ul{margin:0;padding-left:0;list-style:none;}
+  .feedback li{
+    display:flex;
+    gap:12px;
+    padding:11px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14.5px;
+    color:#D8D3EA;
+  }
+  .feedback li:last-child{border-bottom:none;}
+  .feedback li .bullet-icon{
+    flex-shrink:0;
+    width:20px;height:20px;
+    margin-top:1px;
+    color:var(--despues);
+  }
+  .feedback li.warning .bullet-icon{color:var(--regularizacion);}
+  .feedback li b{color:var(--ink);}
+
+  /* quiz / self check */
+  .quiz{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 26px;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .quiz-q{margin-bottom:18px;}
+  .quiz-q:last-child{margin-bottom:0;}
+  .quiz-q p{font-size:14.5px;margin:0 0 10px;color:var(--ink);}
+  .quiz-options{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    text-align:left;
+    background:var(--antes-soft);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font:inherit;
+    font-size:13.5px;
+    padding:10px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  .opt:hover{border-color:var(--despues);}
+  .opt.correct{background:var(--despues-soft);border-color:var(--despues);color:var(--despues);}
+  .opt.wrong{background:#321B24;border-color:var(--regularizacion);color:var(--regularizacion);}
+  .opt[disabled]{cursor:default;}
+
+  footer{
+    margin-top:60px;
+    text-align:center;
+    color:var(--muted);
+    font-family:"Courier New",monospace;
+    font-size:11.5px;
+    letter-spacing:.06em;
+  }
+
+  @media (max-width:640px){
+    .card-head{flex-wrap:wrap;}
+    .hp-change{margin-left:0;text-align:left;padding-right:0;width:100%;}
+    .result-strip{flex-wrap:wrap;}
+    .delta{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Entregable 3.2 · Transformer Encoder-Decoder</p>
+    <h1>Hiperparámetros que mejoraron <em>el accuracy</em></h1>
+    <p class="subtitle">Guía de estudio del notebook mejorado: qué cambió respecto al original, por qué cada cambio importa, y qué falta por resolver.</p>
+  </header>
+
+  <div class="result-strip">
+    <div>
+      <div class="num antes">63.2%</div>
+      <div class="label">Antes</div>
+    </div>
+    <span class="arrow">→</span>
+    <div>
+      <div class="num despues">73.1%</div>
+      <div class="label">Después</div>
+    </div>
+    <span class="delta">+9.9 pts de val accuracy</span>
+  </div>
+
+  <div class="section-title">Los hiperparámetros que cambiaron de valor</div>
+  <div class="quicklist">
+    <p>Esto son <b>variables con un número</b>, escritas tal cual en el código. Son 5:</p>
+    <ol>
+      <li><code>D_MODEL</code>: de <b>64</b> a <b>128</b> → el modelo "piensa" cada palabra con el doble de detalle.</li>
+      <li><code>FF_DIM</code>: de <b>128</b> a <b>256</b> → cada capa procesa la información con más espacio interno.</li>
+      <li><code>NUM_LAYERS</code>: de <b>2</b> a <b>3</b> → se agregó una capa más de profundidad al modelo.</li>
+      <li><code>LR</code> (learning rate): de <b>0.001 fijo</b> a <b>variable</b> (ver técnica "Warmup" abajo).</li>
+      <li><code>EPOCHS</code>: de <b>10</b> a <b>25</b> → se le dio más tiempo para entrenar.</li>
+    </ol>
+    <p class="note"><code>NUM_HEADS</code> (4) y <code>BATCH_SIZE</code> (64) <b>no cambiaron</b>.</p>
+  </div>
+
+  <div class="section-title">Las técnicas nuevas (no son un número, son un mecanismo)</div>
+  <div class="quicklist">
+    <ol>
+      <li><b>Warmup schedule</b> → el <code>LR</code> deja de ser fijo: ahora sube despacio al inicio y luego baja solo. Su propio número es <code>warmup_steps = 4000</code>.</li>
+      <li><b>Early Stopping</b> → se agrega un mecanismo que detiene el entrenamiento si deja de mejorar. Su propio número es <code>patience = 5</code>.</li>
+    </ol>
+    <p class="note">Estas dos técnicas, junto con los 5 hiperparámetros de arriba, son las que llevaron el modelo de <b>63.2% → 73.1%</b> de val accuracy.</p>
+  </div>
+
+  <div class="section-title">Detalle de cada uno — toca para abrir</div>
+  <div class="legend">
+    <span><i class="dot capacidad"></i>Capacidad del modelo</span>
+    <span><i class="dot optimizacion"></i>Optimización / entrenamiento</span>
+    <span><i class="dot regularizacion"></i>Regularización</span>
+  </div>
+
+  <div class="grid" id="cardGrid">
+
+    <div class="card" style="--cat-color:var(--capacidad)">
+      <button class="card-head" aria-expanded="false">
+        <span class="tag">Capacidad</span>
+        <span class="hp-name">D_MODEL</span>
+        <span class="hp-change"><span class="a">64</span> → <span class="d">128</span></span>
+        <span class="chev">▶</span>
+      </button>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p>Es la dimensión del vector con el que se representa cada token (palabra) dentro del modelo: en los embeddings, en la atención y en todas las capas del Transformer.</p>
+          <p>Con 64 dimensiones el modelo tenía poco "espacio" para codificar matices semánticos. Al duplicarlo a 128, cada palabra se representa con un vector más rico, capaz de captar más relaciones de significado y contexto.</p>
+          <div class="why"><b>Por qué importa:</b> es el cambio que más contribuye a la mejora, porque atraviesa todo el modelo (embeddings, atención, feed-forward), no solo una parte.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="--cat-color:var(--capacidad)">
+      <button class="card-head" aria-expanded="false">
+        <span class="tag">Capacidad</span>
+        <span class="hp-name">FF_DIM</span>
+        <span class="hp-change"><span class="a">128</span> → <span class="d">256</span></span>
+        <span class="chev">▶</span>
+      </button>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p>Es el tamaño de la capa oculta dentro del bloque feed-forward de cada encoder/decoder: la parte que procesa cada posición de la secuencia de forma independiente, después de la atención.</p>
+          <p>Suele escalarse junto con d_model (regla típica: 2x–4x). Aquí se mantiene esa proporción (128→256 sigue siendo 2x de d_model), dándole más capacidad de transformación no lineal a cada bloque.</p>
+          <div class="why"><b>Por qué importa:</b> más capacidad de procesamiento dentro de cada capa, sin cambiar cuántas capas hay.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="--cat-color:var(--capacidad)">
+      <button class="card-head" aria-expanded="false">
+        <span class="tag">Capacidad</span>
+        <span class="hp-name">NUM_LAYERS</span>
+        <span class="hp-change"><span class="a">2</span> → <span class="d">3</span></span>
+        <span class="chev">▶</span>
+      </button>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p>Es la cantidad de bloques encoder y decoder apilados uno tras otro.</p>
+          <p>Cada capa adicional permite construir representaciones más abstractas y profundas del lenguaje, igual que agregar capas a cualquier red profunda.</p>
+          <div class="why"><b>Trade-off:</b> más capas = más parámetros y más tiempo de entrenamiento, así que el aumento se hace con cuidado (de 2 a 3, no a 10).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="--cat-color:var(--optimizacion)">
+      <button class="card-head" aria-expanded="false">
+        <span class="tag">Hiperparámetro + Técnica</span>
+        <span class="hp-name">LR (learning rate) + Warmup</span>
+        <span class="hp-change"><span class="a">0.001 fijo</span> → <span class="d">warmup schedule</span></span>
+        <span class="chev">▶</span>
+      </button>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p>En vez de una tasa de aprendizaje constante, se implementó la fórmula del paper original "Attention Is All You Need": el LR sube linealmente durante los primeros warmup_steps (4000 en este caso) y luego decae proporcional a 1/√step.</p>
+          <p>Al inicio del entrenamiento los pesos son aleatorios; un LR alto desde el primer paso puede hacer que el modelo diverja. El warmup lo deja "calentar" suave y luego decae para refinar sin saltos bruscos.</p>
+          <div class="why"><b>Por qué importa:</b> es una técnica específica y muy recomendada para entrenar Transformers — no es solo "bajar el LR a un número fijo más chico".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="--cat-color:var(--optimizacion)">
+      <button class="card-head" aria-expanded="false">
+        <span class="tag">Hiperparámetro + Técnica</span>
+        <span class="hp-name">EPOCHS + Early Stopping</span>
+        <span class="hp-change"><span class="a">10</span> → <span class="d">25 + ES</span></span>
+        <span class="chev">▶</span>
+      </button>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p>Se subió el tope de épocas de 10 a 25, pero se agregó <code>EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)</code>.</p>
+          <p>Esto detiene el entrenamiento automáticamente si la pérdida de validación no mejora durante 5 épocas seguidas, y al final restaura los pesos del mejor punto — no los de la última época.</p>
+          <div class="why"><b>Por qué importa:</b> evita tanto cortar el entrenamiento muy temprano (underfitting) como sobreentrenar de más (overfitting).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="--cat-color:var(--regularizacion)">
+      <button class="card-head" aria-expanded="false">
+        <span class="tag">Experimento aparte</span>
+        <span class="hp-name">Dropout + Label Smoothing</span>
+        <span class="hp-change"><span class="a">0.1</span> → <span class="d">0.15 + LS 0.1</span></span>
+        <span class="chev">▶</span>
+      </button>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p><b>Importante:</b> esto no formó parte del entrenamiento principal (el que pasó de 63.2% a 73.1%). Fue una prueba adicional, "Config 4", con un modelo aparte.</p>
+          <p>El dropout se subió levemente (0.1 → 0.15) para compensar la mayor capacidad del modelo. El label smoothing es una técnica que "suaviza" las etiquetas correctas (en vez de probabilidad 1, le da por ejemplo 0.9 y reparte el resto entre el vocabulario), para que el modelo no se vuelva extremadamente confiado en los tokens más frecuentes.</p>
+          <div class="why"><b>Ojo:</b> esto subió el accuracy de esa prueba, pero bajó el BLEU (de 0.0087 a 0.0034) — el modelo cayó en "mode collapse", repitiendo la misma frase genérica para preguntas distintas. Es un trade-off, no una mejora limpia.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Retroalimentación — cómo seguir mejorando</div>
+  <div class="feedback">
+    <ul>
+      <li>
+        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <span><b>Capacidad:</b> subir d_model / ff_dim / num_layers da más capacidad para representar el lenguaje, pero hay que vigilar el overfitting a medida que crece el modelo.</span>
+      </li>
+      <li>
+        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <span><b>Warmup LR:</b> estabiliza el entrenamiento al inicio — es la técnica estándar del paper original del Transformer, no un truco improvisado.</span>
+      </li>
+      <li>
+        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <span><b>Early Stopping:</b> permite entrenar más épocas sin desperdiciar cómputo ni sobreajustar, restaurando siempre el mejor punto del entrenamiento.</span>
+      </li>
+      <li class="warning">
+        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.18A2 2 0 0 0 3.82 21h16.36a2 2 0 0 0 1.71-2.96L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <span><b>Pendiente:</b> Label Smoothing subió el accuracy pero bajó el BLEU (mode collapse). Falta revisar el ancho del beam search o técnicas de muestreo para recuperar diversidad en las respuestas generadas.</span>
+      </li>
+    </ul>
+  </div>
+
+  <footer>GUÍA DE ESTUDIO · TRANSFORMER ENCODER-DECODER · DAILYDIALOG</footer>
+</div>
+
+<script>
+  // Acordeón de tarjetas
+  document.querySelectorAll('.card-head').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var card = btn.closest('.card');
+      var isOpen = card.classList.contains('open');
+      document.querySelectorAll('.card').forEach(function(c){
+        c.classList.remove('open');
+        c.querySelector('.card-head').setAttribute('aria-expanded','false');
+      });
+      if(!isOpen){
+        card.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+      }
+    });
+  });
+</script>
+</body>
+</html>
