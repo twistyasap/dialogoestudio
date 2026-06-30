@@ -1,527 +1,437 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guía de Estudio · Hiperparámetros del Transformer</title>
-<style>
-  :root{
-    --bg:#0F0A1F;
-    --bg-panel:#17112B;
-    --ink:#EDEAF7;
-    --muted:#9C93B8;
-    --antes:#8A8FA3;
-    --antes-soft:#23202F;
-    --despues:#00C2D1;
-    --despues-soft:#0E2C30;
-    --capacidad:#FFB454;
-    --optimizacion:#7CC9FF;
-    --regularizacion:#FF8FB1;
-    --line:#2A2440;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      radial-gradient(circle at 12% 0%, #241A3F 0%, transparent 45%),
-      radial-gradient(circle at 90% 10%, #1B2C3B 0%, transparent 40%),
-      var(--bg);
-    color:var(--ink);
-    font-family: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-    min-height:100vh;
-    line-height:1.5;
-  }
-  .wrap{max-width:980px;margin:0 auto;padding:56px 24px 100px;}
-
-  header{margin-bottom:40px;}
-  .eyebrow{
-    font-family:"Courier New",Consolas,monospace;
-    font-size:12.5px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:var(--despues);
-    margin:0 0 14px;
-  }
-  h1{
-    font-size:clamp(28px,4.4vw,44px);
-    line-height:1.08;
-    margin:0 0 14px;
-    font-weight:600;
-    letter-spacing:-.01em;
-  }
-  h1 em{color:var(--despues);font-style:normal;}
-  .subtitle{
-    font-family:Arial,Helvetica,sans-serif;
-    color:var(--muted);
-    font-size:15.5px;
-    max-width:640px;
-    margin:0;
-  }
-
-  /* result strip */
-  .result-strip{
-    margin:36px 0 44px;
-    display:flex;
-    align-items:center;
-    gap:18px;
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:20px 24px;
-    font-family:Arial,Helvetica,sans-serif;
-  }
-  .result-strip .num{
-    font-family:"Courier New",monospace;
-    font-weight:700;
-    font-size:30px;
-  }
-  .result-strip .num.antes{color:var(--antes);}
-  .result-strip .num.despues{color:var(--despues);}
-  .arrow{color:var(--muted);font-size:22px;}
-  .result-strip .label{
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:var(--muted);
-    margin-top:2px;
-  }
-  .delta{
-    margin-left:auto;
-    background:var(--despues-soft);
-    color:var(--despues);
-    font-family:"Courier New",monospace;
-    font-weight:700;
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:13px;
-    white-space:nowrap;
-  }
-
-  /* quick list */
-  .quicklist{
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:22px 26px;
-    font-family:Arial,Helvetica,sans-serif;
-    margin-bottom:8px;
-  }
-  .quicklist > p{
-    margin:0 0 14px;
-    font-size:14.5px;
-    color:var(--muted);
-  }
-  .quicklist ol{
-    margin:0;
-    padding-left:22px;
-  }
-  .quicklist li{
-    font-size:15px;
-    color:#D8D3EA;
-    padding:7px 0;
-  }
-  .quicklist li b{color:var(--despues);}
-  .quicklist code{
-    background:var(--antes-soft);
-    border:1px solid var(--line);
-    border-radius:5px;
-    padding:1px 6px;
-    font-family:"Courier New",monospace;
-    font-size:13.5px;
-    color:var(--ink);
-  }
-  .quicklist .note{
-    margin:14px 0 0;
-    font-size:13px;
-    color:var(--muted);
-    border-top:1px solid var(--line);
-    padding-top:12px;
-  }
-  .quicklist .note code{font-size:12.5px;}
-
-  /* legend */
-  .legend{
-    display:flex;
-    gap:18px;
-    flex-wrap:wrap;
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:12.5px;
-    color:var(--muted);
-    margin-bottom:18px;
-  }
-  .legend span{display:inline-flex;align-items:center;gap:7px;}
-  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
-  .dot.capacidad{background:var(--capacidad);}
-  .dot.optimizacion{background:var(--optimizacion);}
-  .dot.regularizacion{background:var(--regularizacion);}
-
-  /* cards */
-  .grid{display:grid;gap:14px;}
-  .card{
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    border-left:4px solid var(--cat-color, var(--despues));
-    border-radius:12px;
-    padding:0;
-    overflow:hidden;
-    transition:border-color .2s ease;
-  }
-  .card-head{
-    width:100%;
-    background:none;
-    border:none;
-    text-align:left;
-    color:inherit;
-    font:inherit;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    padding:18px 20px;
-  }
-  .card-head:hover{background:rgba(255,255,255,.02);}
-  .tag{
-    font-family:"Courier New",monospace;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:var(--cat-color);
-    border:1px solid var(--cat-color);
-    border-radius:999px;
-    padding:3px 9px;
-    flex-shrink:0;
-  }
-  .hp-name{
-    font-weight:600;
-    font-size:17px;
-    flex-shrink:0;
-  }
-  .hp-change{
-    font-family:"Courier New",monospace;
-    font-size:13.5px;
-    color:var(--muted);
-    margin-left:auto;
-    text-align:right;
-    padding-right:8px;
-  }
-  .hp-change .a{color:var(--antes);}
-  .hp-change .d{color:var(--despues);font-weight:700;}
-  .chev{
-    font-size:13px;
-    color:var(--muted);
-    transition:transform .25s ease;
-    flex-shrink:0;
-  }
-  .card.open .chev{transform:rotate(90deg);}
-  .card-body{
-    max-height:0;
-    overflow:hidden;
-    transition:max-height .3s ease;
-    font-family:Arial,Helvetica,sans-serif;
-  }
-  .card.open .card-body{max-height:600px;}
-  .card-body-inner{
-    padding:0 20px 22px 20px;
-    font-size:14.5px;
-    color:#D8D3EA;
-  }
-  .card-body-inner p{margin:0 0 10px;}
-  .card-body-inner p:last-child{margin-bottom:0;}
-  .card-body-inner .why{
-    margin-top:12px;
-    background:var(--antes-soft);
-    border-radius:8px;
-    padding:10px 14px;
-    font-size:13.5px;
-    color:var(--muted);
-    border-left:3px solid var(--cat-color);
-  }
-  .card-body-inner .why b{color:var(--ink);}
-
-  /* section headers */
-  .section-title{
-    font-size:13px;
-    text-transform:uppercase;
-    letter-spacing:.1em;
-    color:var(--muted);
-    font-family:Arial,Helvetica,sans-serif;
-    margin:54px 0 16px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .section-title::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background:var(--line);
-  }
-
-  /* feedback box */
-  .feedback{
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:24px 26px;
-    font-family:Arial,Helvetica,sans-serif;
-  }
-  .feedback ul{margin:0;padding-left:0;list-style:none;}
-  .feedback li{
-    display:flex;
-    gap:12px;
-    padding:11px 0;
-    border-bottom:1px solid var(--line);
-    font-size:14.5px;
-    color:#D8D3EA;
-  }
-  .feedback li:last-child{border-bottom:none;}
-  .feedback li .bullet-icon{
-    flex-shrink:0;
-    width:20px;height:20px;
-    margin-top:1px;
-    color:var(--despues);
-  }
-  .feedback li.warning .bullet-icon{color:var(--regularizacion);}
-  .feedback li b{color:var(--ink);}
-
-  /* quiz / self check */
-  .quiz{
-    background:var(--bg-panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:24px 26px;
-    font-family:Arial,Helvetica,sans-serif;
-  }
-  .quiz-q{margin-bottom:18px;}
-  .quiz-q:last-child{margin-bottom:0;}
-  .quiz-q p{font-size:14.5px;margin:0 0 10px;color:var(--ink);}
-  .quiz-options{display:flex;flex-direction:column;gap:8px;}
-  .opt{
-    text-align:left;
-    background:var(--antes-soft);
-    border:1px solid var(--line);
-    color:var(--ink);
-    font:inherit;
-    font-size:13.5px;
-    padding:10px 14px;
-    border-radius:8px;
-    cursor:pointer;
-    transition:.15s ease;
-  }
-  .opt:hover{border-color:var(--despues);}
-  .opt.correct{background:var(--despues-soft);border-color:var(--despues);color:var(--despues);}
-  .opt.wrong{background:#321B24;border-color:var(--regularizacion);color:var(--regularizacion);}
-  .opt[disabled]{cursor:default;}
-
-  footer{
-    margin-top:60px;
-    text-align:center;
-    color:var(--muted);
-    font-family:"Courier New",monospace;
-    font-size:11.5px;
-    letter-spacing:.06em;
-  }
-
-  @media (max-width:640px){
-    .card-head{flex-wrap:wrap;}
-    .hp-change{margin-left:0;text-align:left;padding-right:0;width:100%;}
-    .result-strip{flex-wrap:wrap;}
-    .delta{margin-left:0;}
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guía de Estudio — CNN Simpsons + Transformer DailyDialog</title>
+  <style>
+:root{
+  --bg:#0b1020;
+  --panel:#111a33;
+  --panel-2:#172341;
+  --ink:#eef4ff;
+  --muted:#b9c6df;
+  --line:rgba(255,255,255,.12);
+  --brand:#7dd3fc;
+  --brand-2:#a78bfa;
+  --accent:#facc15;
+  --ok:#34d399;
+  --danger:#fb7185;
+  --paper:#f7fbff;
+  --paper-ink:#162033;
+  --shadow:0 18px 60px rgba(0,0,0,.28);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(125,211,252,.25), transparent 34rem),
+    radial-gradient(circle at top right, rgba(167,139,250,.22), transparent 30rem),
+    linear-gradient(180deg,#090e1d 0%, #111827 42%, #0b1020 100%);
+  color:var(--ink);
+  line-height:1.6;
+}
+a{color:var(--brand)}
+.wrapper{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
+.sidebar{
+  position:sticky;top:0;height:100vh;padding:26px 22px;border-right:1px solid var(--line);
+  background:rgba(8,13,29,.78);backdrop-filter:blur(16px);overflow:auto
+}
+.logo{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.logo-mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#061021;font-size:24px;font-weight:900;box-shadow:var(--shadow)}
+.logo h1{font-size:18px;line-height:1.15;margin:0}.logo p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.nav-title{margin:26px 0 10px;color:#dbeafe;font-size:12px;text-transform:uppercase;letter-spacing:.14em;font-weight:800}
+.nav a{display:block;padding:9px 10px;margin:4px 0;border-radius:12px;text-decoration:none;color:var(--muted);font-size:14px}
+.nav a:hover{background:rgba(125,211,252,.1);color:var(--ink)}
+.progress-card{margin-top:22px;padding:16px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03))}
+.progress-card strong{display:block;margin-bottom:8px}.progress-card label{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);margin:8px 0}.progress-card input{accent-color:#7dd3fc;margin-top:4px}
+main{padding:34px 34px 70px;max-width:1160px;width:100%}
+.hero{position:relative;overflow:hidden;padding:42px;border:1px solid var(--line);border-radius:32px;background:linear-gradient(135deg,rgba(17,26,51,.92),rgba(32,39,76,.7));box-shadow:var(--shadow)}
+.hero:after{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--accent));opacity:.16}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(125,211,252,.35);border-radius:999px;background:rgba(125,211,252,.1);color:#dff7ff;font-size:13px;font-weight:700}
+.hero h2{font-size:clamp(34px,5vw,60px);line-height:1;margin:18px 0 14px;letter-spacing:-.05em}.hero p{max-width:780px;color:var(--muted);font-size:18px;margin:0 0 22px}
+.hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}.hero-mini{padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.06)}.hero-mini b{display:block;color:var(--ink)}.hero-mini span{color:var(--muted);font-size:13px}
+.section{margin-top:32px;padding:28px;border:1px solid var(--line);border-radius:28px;background:rgba(17,26,51,.68);box-shadow:0 12px 35px rgba(0,0,0,.16)}
+.section.light{background:linear-gradient(180deg,rgba(247,251,255,.98),rgba(232,241,255,.96));color:var(--paper-ink)}.section.light p,.section.light li,.section.light td{color:#34425b}.section.light .muted{color:#5b6b86}.section.light .card{background:white;border-color:#d9e5f7}.section.light .tag{background:#eef6ff;color:#163657;border-color:#cfdef2}.section.light .table-wrap{border-color:#d9e5f7}.section.light table{background:white}.section.light th{background:#eaf3ff;color:#15233a}.section.light details{background:white;border-color:#d9e5f7}.section.light summary{color:#15233a}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.16em;font-weight:900;color:var(--brand)}.section.light .kicker{color:#2563eb}h2,h3{line-height:1.1}h2{font-size:32px;margin:8px 0 6px;letter-spacing:-.03em}h3{font-size:22px;margin:18px 0 10px}.muted{color:var(--muted)}
+.badge{display:inline-flex;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,rgba(125,211,252,.22),rgba(167,139,250,.22));border:1px solid var(--line);font-size:13px;font-weight:800;white-space:nowrap}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.card{padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.06)}.card h3,.card h4{margin-top:0}.card h4{font-size:17px;margin-bottom:8px}.card p{margin:8px 0}.card ul{margin:10px 0 0;padding-left:20px}.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tag{display:inline-flex;padding:5px 9px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.07);color:#dbeafe;font-size:12px;font-weight:700}.number{font-size:34px;font-weight:900;letter-spacing:-.04em;color:#fff}.section.light .number{color:#0f172a}.metric{font-size:38px;font-weight:900;letter-spacing:-.04em}.ok{color:var(--ok)}.warn{color:var(--accent)}.danger{color:var(--danger)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}table{width:100%;border-collapse:separate;border-spacing:0;background:rgba(255,255,255,.04)}th,td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}th{background:rgba(125,211,252,.13);color:#dff7ff;font-size:13px;text-transform:uppercase;letter-spacing:.06em}tr:last-child td{border-bottom:0}.section.light td,.section.light th{border-bottom:1px solid #e2eaf7}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:center}.step{min-height:90px;border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.06);text-align:center}.step b{display:block}.arrow{display:none}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:#e0f2fe}.section.light .formula{background:#eef6ff;border-color:#d9e5f7;color:#11203a}
+details{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05);padding:12px 15px;margin:10px 0}summary{cursor:pointer;font-weight:800;color:#eaf6ff}details p,details ul{margin-bottom:0}.callout{border-left:5px solid var(--brand);padding:14px 16px;border-radius:14px;background:rgba(125,211,252,.1);margin:14px 0}.callout.yellow{border-left-color:var(--accent);background:rgba(250,204,21,.11)}.callout.green{border-left-color:var(--ok);background:rgba(52,211,153,.1)}.section.light .callout{background:#eef8ff}.section.light .callout.yellow{background:#fff8db}.section.light .callout.green{background:#eafaf3}
+.timeline{display:grid;gap:12px}.time-row{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:start}.time{font-weight:900;color:var(--accent);padding-top:3px}.line-card{padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05)}.section.light .line-card{background:white;border-color:#d9e5f7}.mini-note{font-size:13px;color:var(--muted)}.section.light .mini-note{color:#5b6b86}.footer{text-align:center;color:var(--muted);font-size:13px;margin:26px 0 0}
+@media (max-width:1000px){.wrapper{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.nav{columns:2}main{padding:22px}.hero-grid,.grid-3,.grid-4{grid-template-columns:1fr 1fr}.flow{grid-template-columns:1fr}.step{text-align:left;min-height:0}.grid-2{grid-template-columns:1fr}}
+@media (max-width:650px){.hero{padding:28px}.hero-grid,.grid-3,.grid-4{grid-template-columns:1fr}.nav{columns:1}.section-head{display:block}.time-row{grid-template-columns:1fr}}
+@media print{body{background:white;color:#111827}.wrapper{display:block}.sidebar{display:none}main{max-width:none;padding:0}.hero,.section{box-shadow:none;border:1px solid #d1d5db;background:white;color:#111827;break-inside:avoid}.section.light{background:white}.hero p,.muted,.section.light p,.section.light li,.section.light td{color:#374151}.tag,.badge,.pill{border:1px solid #d1d5db;background:#f3f4f6;color:#111827}.card,.line-card,details{border:1px solid #d1d5db;background:#fff}.callout,.callout.yellow,.callout.green{background:#f9fafb}.metric,.number{color:#111827}a{color:#111827;text-decoration:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <p class="eyebrow">Entregable 3.2 · Transformer Encoder-Decoder</p>
-    <h1>Hiperparámetros que mejoraron <em>el accuracy</em></h1>
-    <p class="subtitle">Guía de estudio del notebook mejorado: qué cambió respecto al original, por qué cada cambio importa, y qué falta por resolver.</p>
-  </header>
-
-  <div class="result-strip">
-    <div>
-      <div class="num antes">63.2%</div>
-      <div class="label">Antes</div>
-    </div>
-    <span class="arrow">→</span>
-    <div>
-      <div class="num despues">73.1%</div>
-      <div class="label">Después</div>
-    </div>
-    <span class="delta">+9.9 pts de val accuracy</span>
-  </div>
-
-  <div class="section-title">Los hiperparámetros que cambiaron de valor</div>
-  <div class="quicklist">
-    <p>Esto son <b>variables con un número</b>, escritas tal cual en el código. Son 5:</p>
-    <ol>
-      <li><code>D_MODEL</code>: de <b>64</b> a <b>128</b> → el modelo "piensa" cada palabra con el doble de detalle.</li>
-      <li><code>FF_DIM</code>: de <b>128</b> a <b>256</b> → cada capa procesa la información con más espacio interno.</li>
-      <li><code>NUM_LAYERS</code>: de <b>2</b> a <b>3</b> → se agregó una capa más de profundidad al modelo.</li>
-      <li><code>LR</code> (learning rate): de <b>0.001 fijo</b> a <b>variable</b> (ver técnica "Warmup" abajo).</li>
-      <li><code>EPOCHS</code>: de <b>10</b> a <b>25</b> → se le dio más tiempo para entrenar.</li>
-    </ol>
-    <p class="note"><code>NUM_HEADS</code> (4) y <code>BATCH_SIZE</code> (64) <b>no cambiaron</b>.</p>
-  </div>
-
-  <div class="section-title">Las técnicas nuevas (no son un número, son un mecanismo)</div>
-  <div class="quicklist">
-    <ol>
-      <li><b>Warmup schedule</b> → el <code>LR</code> deja de ser fijo: ahora sube despacio al inicio y luego baja solo. Su propio número es <code>warmup_steps = 4000</code>.</li>
-      <li><b>Early Stopping</b> → se agrega un mecanismo que detiene el entrenamiento si deja de mejorar. Su propio número es <code>patience = 5</code>.</li>
-    </ol>
-    <p class="note">Estas dos técnicas, junto con los 5 hiperparámetros de arriba, son las que llevaron el modelo de <b>63.2% → 73.1%</b> de val accuracy.</p>
-  </div>
-
-  <div class="section-title">Detalle de cada uno — toca para abrir</div>
-  <div class="legend">
-    <span><i class="dot capacidad"></i>Capacidad del modelo</span>
-    <span><i class="dot optimizacion"></i>Optimización / entrenamiento</span>
-    <span><i class="dot regularizacion"></i>Regularización</span>
-  </div>
-
-  <div class="grid" id="cardGrid">
-
-    <div class="card" style="--cat-color:var(--capacidad)">
-      <button class="card-head" aria-expanded="false">
-        <span class="tag">Capacidad</span>
-        <span class="hp-name">D_MODEL</span>
-        <span class="hp-change"><span class="a">64</span> → <span class="d">128</span></span>
-        <span class="chev">▶</span>
-      </button>
-      <div class="card-body">
-        <div class="card-body-inner">
-          <p>Es la dimensión del vector con el que se representa cada token (palabra) dentro del modelo: en los embeddings, en la atención y en todas las capas del Transformer.</p>
-          <p>Con 64 dimensiones el modelo tenía poco "espacio" para codificar matices semánticos. Al duplicarlo a 128, cada palabra se representa con un vector más rico, capaz de captar más relaciones de significado y contexto.</p>
-          <div class="why"><b>Por qué importa:</b> es el cambio que más contribuye a la mejora, porque atraviesa todo el modelo (embeddings, atención, feed-forward), no solo una parte.</div>
+  <div class="wrapper">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-mark">DL</div>
+        <div>
+          <h1>Guía de Estudio</h1>
+          <p>CNN Simpsons + Transformer DailyDialog</p>
         </div>
       </div>
-    </div>
-
-    <div class="card" style="--cat-color:var(--capacidad)">
-      <button class="card-head" aria-expanded="false">
-        <span class="tag">Capacidad</span>
-        <span class="hp-name">FF_DIM</span>
-        <span class="hp-change"><span class="a">128</span> → <span class="d">256</span></span>
-        <span class="chev">▶</span>
-      </button>
-      <div class="card-body">
-        <div class="card-body-inner">
-          <p>Es el tamaño de la capa oculta dentro del bloque feed-forward de cada encoder/decoder: la parte que procesa cada posición de la secuencia de forma independiente, después de la atención.</p>
-          <p>Suele escalarse junto con d_model (regla típica: 2x–4x). Aquí se mantiene esa proporción (128→256 sigue siendo 2x de d_model), dándole más capacidad de transformación no lineal a cada bloque.</p>
-          <div class="why"><b>Por qué importa:</b> más capacidad de procesamiento dentro de cada capa, sin cambiar cuántas capas hay.</div>
-        </div>
+      <div class="nav-title">Navegación rápida</div>
+      <nav class="nav">
+        <a href="#inicio">Inicio</a>
+        <a href="#ruta">Ruta de exposición</a>
+        <a href="#simpsons">Cuaderno 1 — Simpsons</a>
+        <a href="#datos-cnn">Datos y preprocesamiento</a>
+        <a href="#arquitecturas-cnn">Arquitecturas CNN</a>
+        <a href="#metricas-cnn">Métricas CNN</a>
+        <a href="#dailydialog">Cuaderno 2 — DailyDialog</a>
+        <a href="#transformer-arq">Arquitectura Transformer</a>
+        <a href="#hiper-transformer">Hiperparámetros mejorados</a>
+        <a href="#resultados-transformer">BLEU / ROUGE</a>
+        <a href="#comparacion">Comparación</a>
+        <a href="#integracion">Integración conceptual</a>
+        <a href="#oral">Guion oral</a>
+        <a href="#preguntas">Preguntas tipo profe</a>
+      </nav>
+      <div class="progress-card">
+        <strong>Checklist antes de exponer</strong>
+        <label><input type="checkbox"> Sé explicar la diferencia entre los 2 cuadernos.</label>
+        <label><input type="checkbox"> Sé decir por qué la CNN tuvo mejor rendimiento.</label>
+        <label><input type="checkbox"> Sé explicar ReLU, Softmax y Self-Attention.</label>
+        <label><input type="checkbox"> Sé defender los hiperparámetros del Transformer.</label>
+        <label><input type="checkbox"> Sé comparar CNN vs Transformer sin mezclar métricas.</label>
       </div>
-    </div>
+    </aside>
 
-    <div class="card" style="--cat-color:var(--capacidad)">
-      <button class="card-head" aria-expanded="false">
-        <span class="tag">Capacidad</span>
-        <span class="hp-name">NUM_LAYERS</span>
-        <span class="hp-change"><span class="a">2</span> → <span class="d">3</span></span>
-        <span class="chev">▶</span>
-      </button>
-      <div class="card-body">
-        <div class="card-body-inner">
-          <p>Es la cantidad de bloques encoder y decoder apilados uno tras otro.</p>
-          <p>Cada capa adicional permite construir representaciones más abstractas y profundas del lenguaje, igual que agregar capas a cualquier red profunda.</p>
-          <div class="why"><b>Trade-off:</b> más capas = más parámetros y más tiempo de entrenamiento, así que el aumento se hace con cuidado (de 2 a 3, no a 10).</div>
+    <main>
+      <section class="hero" id="inicio">
+        <span class="pill">🎓 Evaluación Deep Learning · DLY0100</span>
+        <h2>Guía bonita para estudiar tu presentación</h2>
+        <p>Esta guía resume el PPT de forma ordenada para que puedas estudiar, exponer y responder preguntas. La idea central es no mezclar los cuadernos: primero va <b>CNN Simpsons</b> y después <b>Transformer DailyDialog</b>.</p>
+        <div class="hero-grid">
+          <div class="hero-mini"><b>Cuaderno 1</b><span>CNN para clasificar personajes de Los Simpsons.</span></div>
+          <div class="hero-mini"><b>Cuaderno 2</b><span>Transformer para generar respuestas en DailyDialog.</span></div>
+          <div class="hero-mini"><b>Cierre</b><span>Comparación, integración conceptual y conclusiones.</span></div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="card" style="--cat-color:var(--optimizacion)">
-      <button class="card-head" aria-expanded="false">
-        <span class="tag">Hiperparámetro + Técnica</span>
-        <span class="hp-name">LR (learning rate) + Warmup</span>
-        <span class="hp-change"><span class="a">0.001 fijo</span> → <span class="d">warmup schedule</span></span>
-        <span class="chev">▶</span>
-      </button>
-      <div class="card-body">
-        <div class="card-body-inner">
-          <p>En vez de una tasa de aprendizaje constante, se implementó la fórmula del paper original "Attention Is All You Need": el LR sube linealmente durante los primeros warmup_steps (4000 en este caso) y luego decae proporcional a 1/√step.</p>
-          <p>Al inicio del entrenamiento los pesos son aleatorios; un LR alto desde el primer paso puede hacer que el modelo diverja. El warmup lo deja "calentar" suave y luego decae para refinar sin saltos bruscos.</p>
-          <div class="why"><b>Por qué importa:</b> es una técnica específica y muy recomendada para entrenar Transformers — no es solo "bajar el LR a un número fijo más chico".</div>
+      <section class="section light" id="ruta">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Mapa mental</div>
+            <h2>Ruta de exposición clara</h2>
+            <p class="muted">Úsalo como orden fijo para no enredarte en la presentación.</p>
+          </div>
+          <span class="badge">14–16 slides aprox.</span>
         </div>
-      </div>
-    </div>
-
-    <div class="card" style="--cat-color:var(--optimizacion)">
-      <button class="card-head" aria-expanded="false">
-        <span class="tag">Hiperparámetro + Técnica</span>
-        <span class="hp-name">EPOCHS + Early Stopping</span>
-        <span class="hp-change"><span class="a">10</span> → <span class="d">25 + ES</span></span>
-        <span class="chev">▶</span>
-      </button>
-      <div class="card-body">
-        <div class="card-body-inner">
-          <p>Se subió el tope de épocas de 10 a 25, pero se agregó <code>EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)</code>.</p>
-          <p>Esto detiene el entrenamiento automáticamente si la pérdida de validación no mejora durante 5 épocas seguidas, y al final restaura los pesos del mejor punto — no los de la última época.</p>
-          <div class="why"><b>Por qué importa:</b> evita tanto cortar el entrenamiento muy temprano (underfitting) como sobreentrenar de más (overfitting).</div>
+        <div class="grid-4">
+          <div class="card"><span class="number">1</span><h3>Simpsons</h3><p>Datos, preprocesamiento, augmentation, activaciones, arquitecturas CNN, entrenamiento y resultados.</p></div>
+          <div class="card"><span class="number">2</span><h3>DailyDialog</h3><p>Arquitectura Transformer, self-attention, encoder-decoder, hiperparámetros y métricas.</p></div>
+          <div class="card"><span class="number">3</span><h3>Comparación</h3><p>Se comparan objetivos y métricas, pero sin decir que accuracy y BLEU miden lo mismo.</p></div>
+          <div class="card"><span class="number">4</span><h3>Integración</h3><p>La CNN reconoce lo visual y el Transformer transforma ese resultado en explicación o respuesta.</p></div>
         </div>
-      </div>
-    </div>
+        <div class="callout green"><b>Frase para abrir:</b> “La presentación está separada en dos cuadernos. Primero explicaré la CNN de Simpsons, que resuelve clasificación de imágenes, y luego el Transformer de DailyDialog, que trabaja generación de texto.”</div>
+      </section>
 
-    <div class="card" style="--cat-color:var(--regularizacion)">
-      <button class="card-head" aria-expanded="false">
-        <span class="tag">Experimento aparte</span>
-        <span class="hp-name">Dropout + Label Smoothing</span>
-        <span class="hp-change"><span class="a">0.1</span> → <span class="d">0.15 + LS 0.1</span></span>
-        <span class="chev">▶</span>
-      </button>
-      <div class="card-body">
-        <div class="card-body-inner">
-          <p><b>Importante:</b> esto no formó parte del entrenamiento principal (el que pasó de 63.2% a 73.1%). Fue una prueba adicional, "Config 4", con un modelo aparte.</p>
-          <p>El dropout se subió levemente (0.1 → 0.15) para compensar la mayor capacidad del modelo. El label smoothing es una técnica que "suaviza" las etiquetas correctas (en vez de probabilidad 1, le da por ejemplo 0.9 y reparte el resto entre el vocabulario), para que el modelo no se vuelva extremadamente confiado en los tokens más frecuentes.</p>
-          <div class="why"><b>Ojo:</b> esto subió el accuracy de esa prueba, pero bajó el BLEU (de 0.0087 a 0.0034) — el modelo cayó en "mode collapse", repitiendo la misma frase genérica para preguntas distintas. Es un trade-off, no una mejora limpia.</div>
+      <section class="section" id="simpsons">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Parte 1</div>
+            <h2>Cuaderno 1 — CNN Simpsons</h2>
+            <p class="muted">Objetivo: clasificar imágenes de personajes de Los Simpsons usando redes convolucionales.</p>
+          </div>
+          <span class="badge">Clasificación cerrada</span>
         </div>
-      </div>
-    </div>
+        <div class="flow">
+          <div class="step"><b>Imagen</b><span class="mini-note">entrada 64×64×3</span></div>
+          <div class="step"><b>Convoluciones</b><span class="mini-note">detectan bordes, colores y rasgos</span></div>
+          <div class="step"><b>Pooling</b><span class="mini-note">reduce tamaño y conserva lo importante</span></div>
+          <div class="step"><b>Densas</b><span class="mini-note">combinan patrones aprendidos</span></div>
+          <div class="step"><b>Softmax</b><span class="mini-note">probabilidad por personaje</span></div>
+        </div>
+      </section>
 
+      <section class="section light" id="datos-cnn">
+        <div class="section-head">
+          <div><div class="kicker">CNN Simpsons</div><h2>Carga y preprocesamiento de datos</h2></div>
+          <span class="badge">18 clases · 18.992 train · 890 test</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Qué se hizo</h3>
+            <ul>
+              <li><b>Resize:</b> todas las imágenes se ajustan a 64×64×3.</li>
+              <li><b>Normalización:</b> los pixeles se escalan de 0–255 a 0–1.</li>
+              <li><b>One-hot encoding:</b> convierte la etiqueta del personaje en vector de clases.</li>
+              <li><b>Split:</b> separación train, validación y test.</li>
+              <li><b>Barajado:</b> evita sesgo por orden de carga.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Cómo explicarlo simple</h3>
+            <p>“El preprocesamiento deja todas las imágenes en el mismo formato para que la CNN pueda aprender de manera estable. La normalización ayuda a que el entrenamiento sea más rápido y menos inestable.”</p>
+            <div class="callout yellow"><b>Clave de rúbrica:</b> nombrar carga, normalización y ejemplos concretos del tratamiento de imágenes.</div>
+          </div>
+        </div>
+        <h3>Data augmentation y activaciones</h3>
+        <div class="grid-3">
+          <div class="card"><h4>Augmentation</h4><p>Rotación 15°, flip horizontal, zoom 0.10, shift 0.10, shear 0.10 y fill nearest.</p><p><b>Sirve para:</b> generalizar mejor y no memorizar poses específicas.</p></div>
+          <div class="card"><h4>ReLU</h4><p>Apaga valores negativos y deja pasar valores positivos. Es rápida y ayuda a aprender patrones visuales.</p><div class="formula">ReLU(x) = max(0, x)</div></div>
+          <div class="card"><h4>Softmax</h4><p>Convierte la salida final en probabilidades para las 18 clases. La probabilidad más alta define la predicción.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="arquitecturas-cnn">
+        <div class="section-head">
+          <div><div class="kicker">CNN Simpsons</div><h2>Arquitecturas comparadas</h2></div>
+          <span class="badge">CNN propia · PlainNet · ResNet-style</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Modelo</th><th>Idea principal</th><th>Parámetros aprox.</th><th>Lectura para explicar</th></tr></thead>
+            <tbody>
+              <tr><td><b>CNN propia</b></td><td>Bloques Conv 32→64→128, capas densas y dropout.</td><td>2,39 M</td><td>Fue la mejor configuración para este dataset.</td></tr>
+              <tr><td><b>PlainNet</b></td><td>Red más profunda sin conexiones residuales.</td><td>0,52 M</td><td>Buena, pero no superó a la CNN propia.</td></tr>
+              <tr><td><b>ResNet-style</b></td><td>Usa skip connections para facilitar flujo de información.</td><td>1,28 M</td><td>Conceptualmente potente, pero en este caso no obtuvo el mejor resultado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout"><b>Frase para defender:</b> “No se eligió solo la arquitectura más compleja; se eligió la que obtuvo mejor desempeño real en test.”</div>
+
+        <h3>Hiperparámetros CNN</h3>
+        <div class="grid-3">
+          <div class="card"><h4>Batch size</h4><p><b>64</b>. Procesa grupos de imágenes por iteración, equilibrando estabilidad y uso de memoria.</p></div>
+          <div class="card"><h4>Optimizer</h4><p><b>Adam</b>. Ajusta pesos de manera adaptativa y suele funcionar bien como punto de partida.</p></div>
+          <div class="card"><h4>Learning rate</h4><p>Se probó <b>1e-3 vs 5e-4</b>. El lr=1e-3 dio mejor rendimiento.</p></div>
+          <div class="card"><h4>Épocas</h4><p>Hasta 50 con callbacks, evitando entrenar de más si el modelo deja de mejorar.</p></div>
+          <div class="card"><h4>Dropout</h4><p>0.25 / 0.50 para reducir sobreajuste.</p></div>
+          <div class="card"><h4>BatchNorm</h4><p>Estabiliza activaciones y ayuda a entrenar capas convolucionales.</p></div>
+        </div>
+      </section>
+
+      <section class="section light" id="metricas-cnn">
+        <div class="section-head">
+          <div><div class="kicker">CNN Simpsons</div><h2>Métricas y resultados</h2></div>
+          <span class="badge">Mejor modelo: CNN propia</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Tabla final</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Modelo</th><th>Accuracy</th><th>F1 weighted</th></tr></thead>
+                <tbody>
+                  <tr><td><b>CNN Propia</b></td><td>0.9865</td><td>0.9865</td></tr>
+                  <tr><td>PlainNet</td><td>0.9753</td><td>0.9753</td></tr>
+                  <tr><td>ResNet-style</td><td>0.9629</td><td>0.9631</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Interpretación</h3>
+            <p><span class="metric ok">98,65%</span></p>
+            <p>La CNN propia logra el mejor rendimiento. Una matriz de confusión con diagonal marcada significa que la mayoría de imágenes fueron asignadas correctamente a su personaje.</p>
+            <p><b>Cuidado:</b> no basta decir “tuvo accuracy alto”; también hay que mencionar F1 para respaldar desempeño por clases.</p>
+          </div>
+        </div>
+        <h3>Conceptos de métricas</h3>
+        <div class="grid-4">
+          <div class="card"><h4>Accuracy</h4><p>Porcentaje total de predicciones correctas.</p></div>
+          <div class="card"><h4>Precision</h4><p>De lo predicho como una clase, cuánto era correcto.</p></div>
+          <div class="card"><h4>Recall</h4><p>De lo que realmente era una clase, cuánto logró encontrar.</p></div>
+          <div class="card"><h4>F1-score</h4><p>Equilibrio entre precision y recall.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="dailydialog">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Parte 2</div>
+            <h2>Cuaderno 2 — Transformer DailyDialog</h2>
+            <p class="muted">Objetivo: generar respuestas de diálogo usando una arquitectura Transformer encoder-decoder.</p>
+          </div>
+          <span class="badge">Generación abierta</span>
+        </div>
+        <div class="callout yellow"><b>Frase de transición:</b> “Ahora paso al segundo cuaderno. Aquí ya no clasificamos imágenes; ahora el problema es generar texto, por eso las métricas cambian.”</div>
+        <div class="grid-3">
+          <div class="card"><h3>Entrada</h3><p>Texto de diálogo procesado con tokenizer y padding.</p></div>
+          <div class="card"><h3>Modelo</h3><p>Transformer con encoder, decoder, self-attention y cross-attention.</p></div>
+          <div class="card"><h3>Salida</h3><p>Respuesta generada token por token.</p></div>
+        </div>
+      </section>
+
+      <section class="section light" id="transformer-arq">
+        <div class="section-head">
+          <div><div class="kicker">DailyDialog</div><h2>Arquitectura Transformer</h2></div>
+          <span class="badge">Encoder · Decoder · Attention</span>
+        </div>
+        <div class="flow">
+          <div class="step"><b>Texto input</b><span class="mini-note">frase del diálogo</span></div>
+          <div class="step"><b>Tokenizer + padding</b><span class="mini-note">convierte texto a secuencia numérica</span></div>
+          <div class="step"><b>Encoder</b><span class="mini-note">entiende contexto</span></div>
+          <div class="step"><b>Decoder</b><span class="mini-note">genera respuesta</span></div>
+          <div class="step"><b>Salida</b><span class="mini-note">tokens predichos</span></div>
+        </div>
+        <div class="grid-3" style="margin-top:16px">
+          <div class="card"><h4>Self-attention</h4><p>Calcula qué palabras son importantes entre sí dentro de la secuencia. Captura contexto y relaciones de largo alcance.</p></div>
+          <div class="card"><h4>Positional encoding</h4><p>Agrega información de orden, porque la atención por sí sola no sabe la posición de cada palabra.</p></div>
+          <div class="card"><h4>Teacher forcing</h4><p>Durante entrenamiento, el decoder recibe la respuesta real desplazada para aprender el siguiente token.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="hiper-transformer">
+        <div class="section-head">
+          <div><div class="kicker">DailyDialog</div><h2>Hiperparámetros ANTES vs DESPUÉS</h2><p class="muted">Esta es la diapositiva clave de mejora del Colab.</p></div>
+          <span class="badge">Val accuracy +9.9 pts</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>ANTES — Notebook original</h3>
+            <ul>
+              <li>d_model = 64</li>
+              <li>ff_dim = 128</li>
+              <li>num_layers = 2</li>
+              <li>Learning rate = 0.001 fijo</li>
+              <li>Epochs = 10, sin callbacks</li>
+              <li>Dropout = 0.1, sin label smoothing</li>
+            </ul>
+            <p><span class="metric warn">63,2%</span><br><span class="mini-note">Val accuracy final</span></p>
+          </div>
+          <div class="card">
+            <h3>DESPUÉS — Notebook mejorado</h3>
+            <ul>
+              <li>d_model = 128</li>
+              <li>ff_dim = 256</li>
+              <li>num_layers = 3</li>
+              <li>Learning rate con warmup schedule</li>
+              <li>Epochs = 25 + EarlyStopping patience=5</li>
+              <li>Dropout = 0.15 + Label Smoothing 0.1</li>
+            </ul>
+            <p><span class="metric ok">73,1%</span><br><span class="mini-note">Val accuracy final</span></p>
+          </div>
+        </div>
+        <div class="callout green"><b>Idea fuerza:</b> más capacidad + warmup learning rate + más épocas con Early Stopping permitieron mejorar la validación de 63,2% a 73,1%.</div>
+        <div class="callout yellow"><b>Ojo con el trade-off:</b> Label Smoothing ayudó a subir accuracy, pero BLEU puede bajar si el modelo genera respuestas muy repetidas. Esto se puede revisar con beam search, top-k/top-p o penalización de repetición.</div>
+      </section>
+
+      <section class="section light" id="resultados-transformer">
+        <div class="section-head">
+          <div><div class="kicker">DailyDialog</div><h2>Resultados comparativos BLEU / ROUGE</h2></div>
+          <span class="badge">4 configuraciones</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Config</th><th>BLEU</th><th>ROUGE-1</th><th>ROUGE-2</th><th>ROUGE-L</th><th>Lectura</th></tr></thead>
+            <tbody>
+              <tr><td><b>Base</b></td><td>0.0087</td><td>0.1259</td><td>0.0214</td><td>0.1156</td><td>Punto de comparación inicial.</td></tr>
+              <tr><td><b>h=8</b></td><td>0.0101</td><td>0.1236</td><td>0.0157</td><td>0.1149</td><td>Mejor BLEU.</td></tr>
+              <tr><td><b>d=128</b></td><td>0.0075</td><td>0.1117</td><td>0.0116</td><td>0.1023</td><td>No mejora las métricas principales.</td></tr>
+              <tr><td><b>Optimizada</b></td><td>0.0034</td><td>0.1268</td><td>0.0095</td><td>0.1170</td><td>Mejor ROUGE-L, pero con posible repetición.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Cómo explicar cada métrica</h3>
+        <div class="grid-4">
+          <div class="card"><h4>BLEU</h4><p>Mide coincidencia de n-gramas entre respuesta generada y respuesta esperada. Es estricto.</p></div>
+          <div class="card"><h4>ROUGE-1</h4><p>Compara coincidencia de palabras individuales.</p></div>
+          <div class="card"><h4>ROUGE-2</h4><p>Compara pares de palabras consecutivas.</p></div>
+          <div class="card"><h4>ROUGE-L</h4><p>Mide la subsecuencia común más larga; captura similitud de estructura.</p></div>
+        </div>
+        <div class="callout"><b>Frase para el profe:</b> “En generación de texto, una respuesta puede ser válida aunque no coincida exactamente con la referencia; por eso BLEU/ROUGE se interpretan junto con ejemplos generados.”</div>
+      </section>
+
+      <section class="section" id="comparacion">
+        <div class="section-head">
+          <div><div class="kicker">Cierre analítico</div><h2>Comparación CNN vs Transformer</h2></div>
+          <span class="badge">No comparar 1:1</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>CNN Simpsons</h3>
+            <ul>
+              <li>Problema de clasificación cerrada.</li>
+              <li>18 clases conocidas.</li>
+              <li>Métrica principal: accuracy y F1-score.</li>
+              <li>Resultado muy alto: 98,65% accuracy.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Transformer DailyDialog</h3>
+            <ul>
+              <li>Problema de generación abierta.</li>
+              <li>Muchas respuestas posibles para un mismo input.</li>
+              <li>Métricas: BLEU, ROUGE y ejemplos generados.</li>
+              <li>Mejor BLEU reportado: 0.0101.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout yellow"><b>Conclusión comparativa:</b> la CNN es más directa y estable porque clasifica categorías fijas. El Transformer es más difícil porque debe generar lenguaje, donde hay varias respuestas válidas.</div>
+      </section>
+
+      <section class="section light" id="integracion">
+        <div class="section-head">
+          <div><div class="kicker">Integración conceptual</div><h2>Cómo usar ambos modelos juntos</h2></div>
+          <span class="badge">Sin fusión técnica compleja</span>
+        </div>
+        <div class="flow">
+          <div class="step"><b>Imagen Simpsons</b><span class="mini-note">entrada visual</span></div>
+          <div class="step"><b>CNN clasifica</b><span class="mini-note">personaje + confianza</span></div>
+          <div class="step"><b>Etiqueta</b><span class="mini-note">ej. Homer Simpson</span></div>
+          <div class="step"><b>Transformer</b><span class="mini-note">genera explicación</span></div>
+          <div class="step"><b>Salida</b><span class="mini-note">texto entendible</span></div>
+        </div>
+        <div class="callout green"><b>Ejemplo:</b> si la CNN detecta “Homer Simpson” con alta confianza, el Transformer puede generar una explicación contextual: “El personaje detectado es Homer; probablemente pertenece a una escena familiar o humorística”.</div>
+        <div class="grid-2">
+          <div class="card"><h3>Valor académico</h3><p>Demuestra visión artificial + lenguaje natural trabajando como módulos separados pero conectados por una decisión conceptual.</p></div>
+          <div class="card"><h3>Valor práctico</h3><p>Permite transformar una predicción técnica en una explicación más entendible para usuarios no expertos.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="oral">
+        <div class="section-head">
+          <div><div class="kicker">Preparación oral</div><h2>Guion rápido para 10 minutos</h2></div>
+          <span class="badge">No memorizar palabra por palabra</span>
+        </div>
+        <div class="timeline">
+          <div class="time-row"><div class="time">0:00–0:45</div><div class="line-card"><b>Inicio:</b> explica que son dos cuadernos separados: Simpsons y DailyDialog.</div></div>
+          <div class="time-row"><div class="time">0:45–3:40</div><div class="line-card"><b>Cuaderno Simpsons:</b> datos, normalización, augmentation, ReLU/Softmax, arquitecturas comparadas y mejor resultado.</div></div>
+          <div class="time-row"><div class="time">3:40–6:40</div><div class="line-card"><b>Cuaderno DailyDialog:</b> arquitectura Transformer, self-attention, teacher forcing e hiperparámetros antes/después.</div></div>
+          <div class="time-row"><div class="time">6:40–8:15</div><div class="line-card"><b>Resultados:</b> BLEU/ROUGE, trade-off con accuracy y lectura crítica de generación.</div></div>
+          <div class="time-row"><div class="time">8:15–9:20</div><div class="line-card"><b>Comparación:</b> CNN clasifica; Transformer genera. No son métricas equivalentes.</div></div>
+          <div class="time-row"><div class="time">9:20–10:00</div><div class="line-card"><b>Integración y cierre:</b> CNN reconoce imagen, Transformer explica en texto.</div></div>
+        </div>
+      </section>
+
+      <section class="section light" id="preguntas">
+        <div class="section-head">
+          <div><div class="kicker">Repaso final</div><h2>Preguntas tipo profe + respuestas cortas</h2></div>
+          <span class="badge">Para defender</span>
+        </div>
+        <details open><summary>¿Por qué separaste los cuadernos?</summary><p>Porque resuelven problemas distintos: el primero clasifica imágenes de Simpsons y el segundo genera respuestas de diálogo. Separarlos evita mezclar métricas y objetivos.</p></details>
+        <details><summary>¿Por qué la CNN propia fue la mejor?</summary><p>Porque obtuvo el mayor accuracy y F1 weighted en test. Además, su configuración fue estable y el fine-tuning posterior no mejoró el resultado.</p></details>
+        <details><summary>¿Para qué sirve data augmentation?</summary><p>Sirve para crear variaciones realistas de las imágenes y reducir sobreajuste. Ayuda a que el modelo no memorice encuadres específicos.</p></details>
+        <details><summary>¿Por qué se usa Softmax al final?</summary><p>Porque el problema es multiclase. Softmax transforma la salida en probabilidades para cada personaje y permite elegir la clase más probable.</p></details>
+        <details><summary>¿Qué mejoró en el Transformer?</summary><p>Aumentó la capacidad del modelo, se usó warmup learning rate, más épocas con EarlyStopping, dropout mayor y label smoothing. La validación subió de 63,2% a 73,1%.</p></details>
+        <details><summary>¿Por qué el BLEU puede ser bajo aunque la respuesta tenga sentido?</summary><p>Porque BLEU compara coincidencia exacta de n-gramas con una referencia. En diálogos puede haber muchas respuestas válidas que no son iguales a la referencia.</p></details>
+        <details><summary>¿Cuál es la idea de integración conceptual?</summary><p>Usar la CNN para detectar el personaje en una imagen y luego usar el Transformer para generar una explicación o respuesta basada en esa etiqueta.</p></details>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="kicker">Resumen ultra corto</div><h2>Qué debes recordar sí o sí</h2></div>
+        </div>
+        <div class="grid-3">
+          <div class="card"><h3>1. CNN</h3><p>Clasifica imágenes. Mejor resultado: CNN propia con 0.9865 accuracy y F1 weighted.</p></div>
+          <div class="card"><h3>2. Transformer</h3><p>Genera respuestas. Mejoró validación con hiperparámetros, pero BLEU/ROUGE deben interpretarse con cuidado.</p></div>
+          <div class="card"><h3>3. Integración</h3><p>Un modelo entiende la imagen y el otro convierte el resultado en texto explicativo.</p></div>
+        </div>
+      </section>
+
+      <p class="footer">Guía de estudio generada desde el PPT ordenado · Diseño HTML/CSS responsive e imprimible.</p>
+    </main>
   </div>
-
-  <div class="section-title">Retroalimentación — cómo seguir mejorando</div>
-  <div class="feedback">
-    <ul>
-      <li>
-        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-        <span><b>Capacidad:</b> subir d_model / ff_dim / num_layers da más capacidad para representar el lenguaje, pero hay que vigilar el overfitting a medida que crece el modelo.</span>
-      </li>
-      <li>
-        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-        <span><b>Warmup LR:</b> estabiliza el entrenamiento al inicio — es la técnica estándar del paper original del Transformer, no un truco improvisado.</span>
-      </li>
-      <li>
-        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-        <span><b>Early Stopping:</b> permite entrenar más épocas sin desperdiciar cómputo ni sobreajustar, restaurando siempre el mejor punto del entrenamiento.</span>
-      </li>
-      <li class="warning">
-        <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.18A2 2 0 0 0 3.82 21h16.36a2 2 0 0 0 1.71-2.96L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-        <span><b>Pendiente:</b> Label Smoothing subió el accuracy pero bajó el BLEU (mode collapse). Falta revisar el ancho del beam search o técnicas de muestreo para recuperar diversidad en las respuestas generadas.</span>
-      </li>
-    </ul>
-  </div>
-
-  <footer>GUÍA DE ESTUDIO · TRANSFORMER ENCODER-DECODER · DAILYDIALOG</footer>
-</div>
-
-<script>
-  // Acordeón de tarjetas
-  document.querySelectorAll('.card-head').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var card = btn.closest('.card');
-      var isOpen = card.classList.contains('open');
-      document.querySelectorAll('.card').forEach(function(c){
-        c.classList.remove('open');
-        c.querySelector('.card-head').setAttribute('aria-expanded','false');
-      });
-      if(!isOpen){
-        card.classList.add('open');
-        btn.setAttribute('aria-expanded','true');
-      }
-    });
-  });
-</script>
 </body>
 </html>
