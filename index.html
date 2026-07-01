@@ -1,437 +1,867 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guía de Estudio — CNN Simpsons + Transformer DailyDialog</title>
-  <style>
-:root{
-  --bg:#0b1020;
-  --panel:#111a33;
-  --panel-2:#172341;
-  --ink:#eef4ff;
-  --muted:#b9c6df;
-  --line:rgba(255,255,255,.12);
-  --brand:#7dd3fc;
-  --brand-2:#a78bfa;
-  --accent:#facc15;
-  --ok:#34d399;
-  --danger:#fb7185;
-  --paper:#f7fbff;
-  --paper-ink:#162033;
-  --shadow:0 18px 60px rgba(0,0,0,.28);
-  --radius:22px;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(125,211,252,.25), transparent 34rem),
-    radial-gradient(circle at top right, rgba(167,139,250,.22), transparent 30rem),
-    linear-gradient(180deg,#090e1d 0%, #111827 42%, #0b1020 100%);
-  color:var(--ink);
-  line-height:1.6;
-}
-a{color:var(--brand)}
-.wrapper{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
-.sidebar{
-  position:sticky;top:0;height:100vh;padding:26px 22px;border-right:1px solid var(--line);
-  background:rgba(8,13,29,.78);backdrop-filter:blur(16px);overflow:auto
-}
-.logo{display:flex;gap:12px;align-items:center;margin-bottom:18px}
-.logo-mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#061021;font-size:24px;font-weight:900;box-shadow:var(--shadow)}
-.logo h1{font-size:18px;line-height:1.15;margin:0}.logo p{margin:4px 0 0;color:var(--muted);font-size:12px}
-.nav-title{margin:26px 0 10px;color:#dbeafe;font-size:12px;text-transform:uppercase;letter-spacing:.14em;font-weight:800}
-.nav a{display:block;padding:9px 10px;margin:4px 0;border-radius:12px;text-decoration:none;color:var(--muted);font-size:14px}
-.nav a:hover{background:rgba(125,211,252,.1);color:var(--ink)}
-.progress-card{margin-top:22px;padding:16px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03))}
-.progress-card strong{display:block;margin-bottom:8px}.progress-card label{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);margin:8px 0}.progress-card input{accent-color:#7dd3fc;margin-top:4px}
-main{padding:34px 34px 70px;max-width:1160px;width:100%}
-.hero{position:relative;overflow:hidden;padding:42px;border:1px solid var(--line);border-radius:32px;background:linear-gradient(135deg,rgba(17,26,51,.92),rgba(32,39,76,.7));box-shadow:var(--shadow)}
-.hero:after{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--accent));opacity:.16}
-.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid rgba(125,211,252,.35);border-radius:999px;background:rgba(125,211,252,.1);color:#dff7ff;font-size:13px;font-weight:700}
-.hero h2{font-size:clamp(34px,5vw,60px);line-height:1;margin:18px 0 14px;letter-spacing:-.05em}.hero p{max-width:780px;color:var(--muted);font-size:18px;margin:0 0 22px}
-.hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}.hero-mini{padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.06)}.hero-mini b{display:block;color:var(--ink)}.hero-mini span{color:var(--muted);font-size:13px}
-.section{margin-top:32px;padding:28px;border:1px solid var(--line);border-radius:28px;background:rgba(17,26,51,.68);box-shadow:0 12px 35px rgba(0,0,0,.16)}
-.section.light{background:linear-gradient(180deg,rgba(247,251,255,.98),rgba(232,241,255,.96));color:var(--paper-ink)}.section.light p,.section.light li,.section.light td{color:#34425b}.section.light .muted{color:#5b6b86}.section.light .card{background:white;border-color:#d9e5f7}.section.light .tag{background:#eef6ff;color:#163657;border-color:#cfdef2}.section.light .table-wrap{border-color:#d9e5f7}.section.light table{background:white}.section.light th{background:#eaf3ff;color:#15233a}.section.light details{background:white;border-color:#d9e5f7}.section.light summary{color:#15233a}
-.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.16em;font-weight:900;color:var(--brand)}.section.light .kicker{color:#2563eb}h2,h3{line-height:1.1}h2{font-size:32px;margin:8px 0 6px;letter-spacing:-.03em}h3{font-size:22px;margin:18px 0 10px}.muted{color:var(--muted)}
-.badge{display:inline-flex;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,rgba(125,211,252,.22),rgba(167,139,250,.22));border:1px solid var(--line);font-size:13px;font-weight:800;white-space:nowrap}
-.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.card{padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.06)}.card h3,.card h4{margin-top:0}.card h4{font-size:17px;margin-bottom:8px}.card p{margin:8px 0}.card ul{margin:10px 0 0;padding-left:20px}.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tag{display:inline-flex;padding:5px 9px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.07);color:#dbeafe;font-size:12px;font-weight:700}.number{font-size:34px;font-weight:900;letter-spacing:-.04em;color:#fff}.section.light .number{color:#0f172a}.metric{font-size:38px;font-weight:900;letter-spacing:-.04em}.ok{color:var(--ok)}.warn{color:var(--accent)}.danger{color:var(--danger)}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}table{width:100%;border-collapse:separate;border-spacing:0;background:rgba(255,255,255,.04)}th,td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}th{background:rgba(125,211,252,.13);color:#dff7ff;font-size:13px;text-transform:uppercase;letter-spacing:.06em}tr:last-child td{border-bottom:0}.section.light td,.section.light th{border-bottom:1px solid #e2eaf7}
-.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:center}.step{min-height:90px;border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.06);text-align:center}.step b{display:block}.arrow{display:none}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:#e0f2fe}.section.light .formula{background:#eef6ff;border-color:#d9e5f7;color:#11203a}
-details{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05);padding:12px 15px;margin:10px 0}summary{cursor:pointer;font-weight:800;color:#eaf6ff}details p,details ul{margin-bottom:0}.callout{border-left:5px solid var(--brand);padding:14px 16px;border-radius:14px;background:rgba(125,211,252,.1);margin:14px 0}.callout.yellow{border-left-color:var(--accent);background:rgba(250,204,21,.11)}.callout.green{border-left-color:var(--ok);background:rgba(52,211,153,.1)}.section.light .callout{background:#eef8ff}.section.light .callout.yellow{background:#fff8db}.section.light .callout.green{background:#eafaf3}
-.timeline{display:grid;gap:12px}.time-row{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:start}.time{font-weight:900;color:var(--accent);padding-top:3px}.line-card{padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05)}.section.light .line-card{background:white;border-color:#d9e5f7}.mini-note{font-size:13px;color:var(--muted)}.section.light .mini-note{color:#5b6b86}.footer{text-align:center;color:var(--muted);font-size:13px;margin:26px 0 0}
-@media (max-width:1000px){.wrapper{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.nav{columns:2}main{padding:22px}.hero-grid,.grid-3,.grid-4{grid-template-columns:1fr 1fr}.flow{grid-template-columns:1fr}.step{text-align:left;min-height:0}.grid-2{grid-template-columns:1fr}}
-@media (max-width:650px){.hero{padding:28px}.hero-grid,.grid-3,.grid-4{grid-template-columns:1fr}.nav{columns:1}.section-head{display:block}.time-row{grid-template-columns:1fr}}
-@media print{body{background:white;color:#111827}.wrapper{display:block}.sidebar{display:none}main{max-width:none;padding:0}.hero,.section{box-shadow:none;border:1px solid #d1d5db;background:white;color:#111827;break-inside:avoid}.section.light{background:white}.hero p,.muted,.section.light p,.section.light li,.section.light td{color:#374151}.tag,.badge,.pill{border:1px solid #d1d5db;background:#f3f4f6;color:#111827}.card,.line-card,details{border:1px solid #d1d5db;background:#fff}.callout,.callout.yellow,.callout.green{background:#f9fafb}.metric,.number{color:#111827}a{color:#111827;text-decoration:none}}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de Estudio · Machine Learning CS:GO</title>
+<style>
+  :root{
+    --yellow:#FFD400;
+    --yellow-soft:#FFE873;
+    --yellow-pale:#FFF7CC;
+    --black:#0B0B0B;
+    --black-soft:#1C1C1C;
+    --gray:#4A4A4A;
+    --gray-light:#8A8A8A;
+    --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--black);
+    color:var(--white);
+    line-height:1.6;
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    background:linear-gradient(135deg, var(--black) 0%, var(--black-soft) 100%);
+    padding:64px 24px 48px;
+    text-align:center;
+    border-bottom:6px solid var(--yellow);
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute;
+    top:-80px; right:-80px;
+    width:280px;height:280px;
+    background:var(--yellow);
+    opacity:0.08;
+    border-radius:50%;
+  }
+  header::after{
+    content:"";
+    position:absolute;
+    bottom:-100px; left:-60px;
+    width:220px;height:220px;
+    background:var(--yellow);
+    opacity:0.06;
+    border-radius:50%;
+  }
+  .eyebrow{
+    display:inline-block;
+    color:var(--yellow);
+    font-weight:700;
+    letter-spacing:3px;
+    font-size:13px;
+    text-transform:uppercase;
+    background:rgba(255,212,0,0.1);
+    padding:6px 16px;
+    border-radius:20px;
+    border:1px solid rgba(255,212,0,0.35);
+    margin-bottom:20px;
+  }
+  header h1{
+    font-size:2.5rem;
+    color:var(--white);
+    max-width:820px;
+    margin:0 auto 14px;
+    font-weight:800;
+    letter-spacing:-0.5px;
+  }
+  header h1 span{color:var(--yellow);}
+  header p.subtitle{
+    color:#cfcfcf;
+    font-size:1.05rem;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    margin-top:28px;
+  }
+  .meta-pill{
+    background:var(--black-soft);
+    border:1px solid #333;
+    color:#e8e8e8;
+    font-size:12.5px;
+    padding:7px 14px;
+    border-radius:8px;
+  }
+
+  /* ===== NAV ===== */
+  nav{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:var(--black-soft);
+    border-bottom:2px solid var(--yellow);
+    overflow-x:auto;
+    white-space:nowrap;
+    padding:0 12px;
+  }
+  nav a{
+    display:inline-block;
+    color:var(--yellow-soft);
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+    padding:14px 16px;
+    border-bottom:3px solid transparent;
+    transition:all .15s ease;
+  }
+  nav a:hover{
+    color:var(--yellow);
+    border-bottom:3px solid var(--yellow);
+    background:rgba(255,212,0,0.06);
+  }
+
+  main{max-width:980px;margin:0 auto;padding:48px 20px 100px;}
+
+  section{margin-bottom:64px;scroll-margin-top:60px;}
+
+  .section-tag{
+    display:inline-block;
+    background:var(--yellow);
+    color:var(--black);
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:5px;
+    margin-bottom:14px;
+  }
+  h2{
+    font-size:1.8rem;
+    color:var(--white);
+    margin-bottom:6px;
+    font-weight:800;
+  }
+  h2 span{color:var(--yellow);}
+  .section-desc{
+    color:var(--gray-light);
+    margin-bottom:28px;
+    font-size:1rem;
+    max-width:720px;
+  }
+  h3{
+    color:var(--yellow);
+    font-size:1.15rem;
+    margin-bottom:10px;
+    font-weight:700;
+  }
+
+  /* ===== CARDS ===== */
+  .card{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:20px;
+  }
+  .card p{color:#d8d8d8;font-size:0.97rem;}
+  .card ul{padding-left:20px;margin-top:8px;}
+  .card li{color:#d8d8d8;margin-bottom:6px;font-size:0.95rem;}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media(max-width:800px){
+    .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  }
+
+  /* stat callouts */
+  .stat{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:14px;
+    padding:22px;
+    text-align:center;
+  }
+  .stat .num{
+    font-size:2.1rem;
+    font-weight:800;
+    color:var(--yellow);
+    line-height:1;
+    margin-bottom:8px;
+  }
+  .stat .label{
+    color:#c9c9c9;
+    font-size:0.85rem;
+  }
+
+  /* hypothesis cards */
+  .hyp{
+    display:flex;
+    gap:16px;
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-left:4px solid var(--yellow);
+    border-radius:10px;
+    padding:18px 20px;
+    margin-bottom:14px;
+  }
+  .hyp .num-badge{
+    flex-shrink:0;
+    width:38px;height:38px;
+    background:var(--yellow);
+    color:var(--black);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;
+    font-size:1rem;
+  }
+  .hyp h4{color:var(--white);font-size:1rem;margin-bottom:4px;}
+  .hyp p{color:#c9c9c9;font-size:0.92rem;}
+
+  /* model cards */
+  .model-card{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:14px;
+    padding:22px;
+    height:100%;
+  }
+  .model-card .model-type{
+    display:inline-block;
+    background:rgba(255,212,0,0.12);
+    color:var(--yellow);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:4px 10px;
+    border-radius:6px;
+    margin-bottom:10px;
+  }
+  .model-card h4{color:var(--white);font-size:1.15rem;margin-bottom:12px;}
+  .model-card .param-block{
+    background:#111;
+    border:1px solid #262626;
+    border-radius:8px;
+    padding:10px 14px;
+    font-family:'Courier New', monospace;
+    font-size:0.82rem;
+    color:var(--yellow-soft);
+    margin-bottom:12px;
+  }
+  .model-card .analysis-label{
+    color:var(--gray-light);
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .model-card .analysis-text{color:#cfcfcf;font-size:0.9rem;}
+
+  .winner-badge{
+    background:linear-gradient(135deg, var(--yellow), var(--yellow-soft));
+    color:var(--black);
+    border-radius:14px;
+    padding:26px;
+    text-align:center;
+    margin-bottom:24px;
+  }
+  .winner-badge .trophy{font-size:2rem;margin-bottom:6px;}
+  .winner-badge h3{color:var(--black);font-size:1.4rem;margin-bottom:6px;}
+  .winner-badge .metrics{font-weight:700;font-size:1.05rem;}
+
+  /* table */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:var(--black-soft);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  th{
+    background:var(--yellow);
+    color:var(--black);
+    padding:12px 14px;
+    text-align:left;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  td{
+    padding:12px 14px;
+    border-bottom:1px solid #262626;
+    color:#d8d8d8;
+    font-size:0.92rem;
+  }
+  tr:last-child td{border-bottom:none;}
+  tr.highlight td{background:rgba(255,212,0,0.08);color:var(--white);font-weight:700;}
+
+  /* confusion matrix */
+  .confusion-wrap{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:24px;
+  }
+  .confusion-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:16px;
+  }
+  .cmatrix-cell{
+    border-radius:10px;
+    padding:16px;
+    text-align:center;
+  }
+  .cmatrix-cell.tn{background:rgba(255,212,0,0.15);border:1px solid var(--yellow);}
+  .cmatrix-cell.tp{background:rgba(255,212,0,0.15);border:1px solid var(--yellow);}
+  .cmatrix-cell.fp{background:#1a1a1a;border:1px solid #3a3a3a;}
+  .cmatrix-cell.fn{background:#1a1a1a;border:1px solid #3a3a3a;}
+  .cmatrix-cell .val{font-size:1.6rem;font-weight:800;color:var(--yellow);}
+  .cmatrix-cell.fp .val, .cmatrix-cell.fn .val{color:#cfcfcf;}
+  .cmatrix-cell .name{font-weight:700;color:var(--white);font-size:0.85rem;margin:4px 0 2px;}
+  .cmatrix-cell .desc{color:var(--gray-light);font-size:0.78rem;}
+
+  /* glossary */
+  .glossary-item{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:10px;
+  }
+  .glossary-item .term{color:var(--yellow);font-weight:700;font-size:0.95rem;}
+  .glossary-item .def{color:#c9c9c9;font-size:0.88rem;margin-top:3px;}
+
+  /* deployment steps */
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-bottom:24px;
+  }
+  @media(max-width:800px){.steps{grid-template-columns:1fr 1fr;}}
+  .step{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:12px;
+    padding:18px;
+    text-align:center;
+  }
+  .step .step-num{
+    width:32px;height:32px;
+    background:var(--yellow);
+    color:var(--black);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;
+    margin:0 auto 10px;
+  }
+  .step h5{color:var(--white);font-size:0.9rem;margin-bottom:6px;}
+  .step p{color:var(--gray-light);font-size:0.8rem;}
+
+  .simulator-card{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-left:4px solid var(--yellow);
+    border-radius:10px;
+    padding:20px;
+  }
+  .simulator-card h4{color:var(--white);margin-bottom:4px;}
+  .simulator-card .model-active{color:var(--yellow);font-size:0.85rem;font-weight:700;margin-bottom:10px;}
+  .simulator-card p{color:#c9c9c9;font-size:0.88rem;margin-bottom:6px;}
+  .output-example{
+    background:#111;
+    border:1px dashed var(--yellow);
+    border-radius:8px;
+    padding:10px 14px;
+    font-family:'Courier New',monospace;
+    color:var(--yellow-soft);
+    font-size:0.85rem;
+    margin-top:10px;
+  }
+
+  /* conclusions */
+  .conclusion-card{
+    display:flex;
+    gap:16px;
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:14px;
+    align-items:flex-start;
+  }
+  .conclusion-card .icon{
+    flex-shrink:0;
+    width:40px;height:40px;
+    background:var(--yellow);
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;
+    color:var(--black);
+    font-size:1.2rem;
+  }
+  .conclusion-card h4{color:var(--white);margin-bottom:4px;font-size:1rem;}
+  .conclusion-card p{color:#c9c9c9;font-size:0.9rem;}
+
+  /* quiz */
+  .quiz-item{
+    background:var(--black-soft);
+    border:1px solid #2a2a2a;
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:14px;
+  }
+  .quiz-item .q{color:var(--white);font-weight:700;margin-bottom:10px;font-size:0.95rem;}
+  .quiz-item .toggle-ans{
+    background:none;
+    border:1px solid var(--yellow);
+    color:var(--yellow);
+    padding:6px 14px;
+    border-radius:6px;
+    font-size:0.8rem;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .quiz-item .toggle-ans:hover{background:var(--yellow);color:var(--black);}
+  .quiz-item .ans{
+    display:none;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid #2a2a2a;
+    color:var(--yellow-soft);
+    font-size:0.9rem;
+  }
+  .quiz-item .ans.show{display:block;}
+
+  footer{
+    text-align:center;
+    padding:36px 20px;
+    color:var(--gray-light);
+    font-size:0.82rem;
+    border-top:1px solid #222;
+  }
+  footer .yellow-dot{color:var(--yellow);}
 </style>
 </head>
 <body>
-  <div class="wrapper">
-    <aside class="sidebar">
-      <div class="logo">
-        <div class="logo-mark">DL</div>
-        <div>
-          <h1>Guía de Estudio</h1>
-          <p>CNN Simpsons + Transformer DailyDialog</p>
-        </div>
-      </div>
-      <div class="nav-title">Navegación rápida</div>
-      <nav class="nav">
-        <a href="#inicio">Inicio</a>
-        <a href="#ruta">Ruta de exposición</a>
-        <a href="#simpsons">Cuaderno 1 — Simpsons</a>
-        <a href="#datos-cnn">Datos y preprocesamiento</a>
-        <a href="#arquitecturas-cnn">Arquitecturas CNN</a>
-        <a href="#metricas-cnn">Métricas CNN</a>
-        <a href="#dailydialog">Cuaderno 2 — DailyDialog</a>
-        <a href="#transformer-arq">Arquitectura Transformer</a>
-        <a href="#hiper-transformer">Hiperparámetros mejorados</a>
-        <a href="#resultados-transformer">BLEU / ROUGE</a>
-        <a href="#comparacion">Comparación</a>
-        <a href="#integracion">Integración conceptual</a>
-        <a href="#oral">Guion oral</a>
-        <a href="#preguntas">Preguntas tipo profe</a>
-      </nav>
-      <div class="progress-card">
-        <strong>Checklist antes de exponer</strong>
-        <label><input type="checkbox"> Sé explicar la diferencia entre los 2 cuadernos.</label>
-        <label><input type="checkbox"> Sé decir por qué la CNN tuvo mejor rendimiento.</label>
-        <label><input type="checkbox"> Sé explicar ReLU, Softmax y Self-Attention.</label>
-        <label><input type="checkbox"> Sé defender los hiperparámetros del Transformer.</label>
-        <label><input type="checkbox"> Sé comparar CNN vs Transformer sin mezclar métricas.</label>
-      </div>
-    </aside>
 
-    <main>
-      <section class="hero" id="inicio">
-        <span class="pill">🎓 Evaluación Deep Learning · DLY0100</span>
-        <h2>Guía bonita para estudiar tu presentación</h2>
-        <p>Esta guía resume el PPT de forma ordenada para que puedas estudiar, exponer y responder preguntas. La idea central es no mezclar los cuadernos: primero va <b>CNN Simpsons</b> y después <b>Transformer DailyDialog</b>.</p>
-        <div class="hero-grid">
-          <div class="hero-mini"><b>Cuaderno 1</b><span>CNN para clasificar personajes de Los Simpsons.</span></div>
-          <div class="hero-mini"><b>Cuaderno 2</b><span>Transformer para generar respuestas en DailyDialog.</span></div>
-          <div class="hero-mini"><b>Cierre</b><span>Comparación, integración conceptual y conclusiones.</span></div>
-        </div>
-      </section>
-
-      <section class="section light" id="ruta">
-        <div class="section-head">
-          <div>
-            <div class="kicker">Mapa mental</div>
-            <h2>Ruta de exposición clara</h2>
-            <p class="muted">Úsalo como orden fijo para no enredarte en la presentación.</p>
-          </div>
-          <span class="badge">14–16 slides aprox.</span>
-        </div>
-        <div class="grid-4">
-          <div class="card"><span class="number">1</span><h3>Simpsons</h3><p>Datos, preprocesamiento, augmentation, activaciones, arquitecturas CNN, entrenamiento y resultados.</p></div>
-          <div class="card"><span class="number">2</span><h3>DailyDialog</h3><p>Arquitectura Transformer, self-attention, encoder-decoder, hiperparámetros y métricas.</p></div>
-          <div class="card"><span class="number">3</span><h3>Comparación</h3><p>Se comparan objetivos y métricas, pero sin decir que accuracy y BLEU miden lo mismo.</p></div>
-          <div class="card"><span class="number">4</span><h3>Integración</h3><p>La CNN reconoce lo visual y el Transformer transforma ese resultado en explicación o respuesta.</p></div>
-        </div>
-        <div class="callout green"><b>Frase para abrir:</b> “La presentación está separada en dos cuadernos. Primero explicaré la CNN de Simpsons, que resuelve clasificación de imágenes, y luego el Transformer de DailyDialog, que trabaja generación de texto.”</div>
-      </section>
-
-      <section class="section" id="simpsons">
-        <div class="section-head">
-          <div>
-            <div class="kicker">Parte 1</div>
-            <h2>Cuaderno 1 — CNN Simpsons</h2>
-            <p class="muted">Objetivo: clasificar imágenes de personajes de Los Simpsons usando redes convolucionales.</p>
-          </div>
-          <span class="badge">Clasificación cerrada</span>
-        </div>
-        <div class="flow">
-          <div class="step"><b>Imagen</b><span class="mini-note">entrada 64×64×3</span></div>
-          <div class="step"><b>Convoluciones</b><span class="mini-note">detectan bordes, colores y rasgos</span></div>
-          <div class="step"><b>Pooling</b><span class="mini-note">reduce tamaño y conserva lo importante</span></div>
-          <div class="step"><b>Densas</b><span class="mini-note">combinan patrones aprendidos</span></div>
-          <div class="step"><b>Softmax</b><span class="mini-note">probabilidad por personaje</span></div>
-        </div>
-      </section>
-
-      <section class="section light" id="datos-cnn">
-        <div class="section-head">
-          <div><div class="kicker">CNN Simpsons</div><h2>Carga y preprocesamiento de datos</h2></div>
-          <span class="badge">18 clases · 18.992 train · 890 test</span>
-        </div>
-        <div class="grid-2">
-          <div class="card">
-            <h3>Qué se hizo</h3>
-            <ul>
-              <li><b>Resize:</b> todas las imágenes se ajustan a 64×64×3.</li>
-              <li><b>Normalización:</b> los pixeles se escalan de 0–255 a 0–1.</li>
-              <li><b>One-hot encoding:</b> convierte la etiqueta del personaje en vector de clases.</li>
-              <li><b>Split:</b> separación train, validación y test.</li>
-              <li><b>Barajado:</b> evita sesgo por orden de carga.</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3>Cómo explicarlo simple</h3>
-            <p>“El preprocesamiento deja todas las imágenes en el mismo formato para que la CNN pueda aprender de manera estable. La normalización ayuda a que el entrenamiento sea más rápido y menos inestable.”</p>
-            <div class="callout yellow"><b>Clave de rúbrica:</b> nombrar carga, normalización y ejemplos concretos del tratamiento de imágenes.</div>
-          </div>
-        </div>
-        <h3>Data augmentation y activaciones</h3>
-        <div class="grid-3">
-          <div class="card"><h4>Augmentation</h4><p>Rotación 15°, flip horizontal, zoom 0.10, shift 0.10, shear 0.10 y fill nearest.</p><p><b>Sirve para:</b> generalizar mejor y no memorizar poses específicas.</p></div>
-          <div class="card"><h4>ReLU</h4><p>Apaga valores negativos y deja pasar valores positivos. Es rápida y ayuda a aprender patrones visuales.</p><div class="formula">ReLU(x) = max(0, x)</div></div>
-          <div class="card"><h4>Softmax</h4><p>Convierte la salida final en probabilidades para las 18 clases. La probabilidad más alta define la predicción.</p></div>
-        </div>
-      </section>
-
-      <section class="section" id="arquitecturas-cnn">
-        <div class="section-head">
-          <div><div class="kicker">CNN Simpsons</div><h2>Arquitecturas comparadas</h2></div>
-          <span class="badge">CNN propia · PlainNet · ResNet-style</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Modelo</th><th>Idea principal</th><th>Parámetros aprox.</th><th>Lectura para explicar</th></tr></thead>
-            <tbody>
-              <tr><td><b>CNN propia</b></td><td>Bloques Conv 32→64→128, capas densas y dropout.</td><td>2,39 M</td><td>Fue la mejor configuración para este dataset.</td></tr>
-              <tr><td><b>PlainNet</b></td><td>Red más profunda sin conexiones residuales.</td><td>0,52 M</td><td>Buena, pero no superó a la CNN propia.</td></tr>
-              <tr><td><b>ResNet-style</b></td><td>Usa skip connections para facilitar flujo de información.</td><td>1,28 M</td><td>Conceptualmente potente, pero en este caso no obtuvo el mejor resultado.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="callout"><b>Frase para defender:</b> “No se eligió solo la arquitectura más compleja; se eligió la que obtuvo mejor desempeño real en test.”</div>
-
-        <h3>Hiperparámetros CNN</h3>
-        <div class="grid-3">
-          <div class="card"><h4>Batch size</h4><p><b>64</b>. Procesa grupos de imágenes por iteración, equilibrando estabilidad y uso de memoria.</p></div>
-          <div class="card"><h4>Optimizer</h4><p><b>Adam</b>. Ajusta pesos de manera adaptativa y suele funcionar bien como punto de partida.</p></div>
-          <div class="card"><h4>Learning rate</h4><p>Se probó <b>1e-3 vs 5e-4</b>. El lr=1e-3 dio mejor rendimiento.</p></div>
-          <div class="card"><h4>Épocas</h4><p>Hasta 50 con callbacks, evitando entrenar de más si el modelo deja de mejorar.</p></div>
-          <div class="card"><h4>Dropout</h4><p>0.25 / 0.50 para reducir sobreajuste.</p></div>
-          <div class="card"><h4>BatchNorm</h4><p>Estabiliza activaciones y ayuda a entrenar capas convolucionales.</p></div>
-        </div>
-      </section>
-
-      <section class="section light" id="metricas-cnn">
-        <div class="section-head">
-          <div><div class="kicker">CNN Simpsons</div><h2>Métricas y resultados</h2></div>
-          <span class="badge">Mejor modelo: CNN propia</span>
-        </div>
-        <div class="grid-2">
-          <div class="card">
-            <h3>Tabla final</h3>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Modelo</th><th>Accuracy</th><th>F1 weighted</th></tr></thead>
-                <tbody>
-                  <tr><td><b>CNN Propia</b></td><td>0.9865</td><td>0.9865</td></tr>
-                  <tr><td>PlainNet</td><td>0.9753</td><td>0.9753</td></tr>
-                  <tr><td>ResNet-style</td><td>0.9629</td><td>0.9631</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Interpretación</h3>
-            <p><span class="metric ok">98,65%</span></p>
-            <p>La CNN propia logra el mejor rendimiento. Una matriz de confusión con diagonal marcada significa que la mayoría de imágenes fueron asignadas correctamente a su personaje.</p>
-            <p><b>Cuidado:</b> no basta decir “tuvo accuracy alto”; también hay que mencionar F1 para respaldar desempeño por clases.</p>
-          </div>
-        </div>
-        <h3>Conceptos de métricas</h3>
-        <div class="grid-4">
-          <div class="card"><h4>Accuracy</h4><p>Porcentaje total de predicciones correctas.</p></div>
-          <div class="card"><h4>Precision</h4><p>De lo predicho como una clase, cuánto era correcto.</p></div>
-          <div class="card"><h4>Recall</h4><p>De lo que realmente era una clase, cuánto logró encontrar.</p></div>
-          <div class="card"><h4>F1-score</h4><p>Equilibrio entre precision y recall.</p></div>
-        </div>
-      </section>
-
-      <section class="section" id="dailydialog">
-        <div class="section-head">
-          <div>
-            <div class="kicker">Parte 2</div>
-            <h2>Cuaderno 2 — Transformer DailyDialog</h2>
-            <p class="muted">Objetivo: generar respuestas de diálogo usando una arquitectura Transformer encoder-decoder.</p>
-          </div>
-          <span class="badge">Generación abierta</span>
-        </div>
-        <div class="callout yellow"><b>Frase de transición:</b> “Ahora paso al segundo cuaderno. Aquí ya no clasificamos imágenes; ahora el problema es generar texto, por eso las métricas cambian.”</div>
-        <div class="grid-3">
-          <div class="card"><h3>Entrada</h3><p>Texto de diálogo procesado con tokenizer y padding.</p></div>
-          <div class="card"><h3>Modelo</h3><p>Transformer con encoder, decoder, self-attention y cross-attention.</p></div>
-          <div class="card"><h3>Salida</h3><p>Respuesta generada token por token.</p></div>
-        </div>
-      </section>
-
-      <section class="section light" id="transformer-arq">
-        <div class="section-head">
-          <div><div class="kicker">DailyDialog</div><h2>Arquitectura Transformer</h2></div>
-          <span class="badge">Encoder · Decoder · Attention</span>
-        </div>
-        <div class="flow">
-          <div class="step"><b>Texto input</b><span class="mini-note">frase del diálogo</span></div>
-          <div class="step"><b>Tokenizer + padding</b><span class="mini-note">convierte texto a secuencia numérica</span></div>
-          <div class="step"><b>Encoder</b><span class="mini-note">entiende contexto</span></div>
-          <div class="step"><b>Decoder</b><span class="mini-note">genera respuesta</span></div>
-          <div class="step"><b>Salida</b><span class="mini-note">tokens predichos</span></div>
-        </div>
-        <div class="grid-3" style="margin-top:16px">
-          <div class="card"><h4>Self-attention</h4><p>Calcula qué palabras son importantes entre sí dentro de la secuencia. Captura contexto y relaciones de largo alcance.</p></div>
-          <div class="card"><h4>Positional encoding</h4><p>Agrega información de orden, porque la atención por sí sola no sabe la posición de cada palabra.</p></div>
-          <div class="card"><h4>Teacher forcing</h4><p>Durante entrenamiento, el decoder recibe la respuesta real desplazada para aprender el siguiente token.</p></div>
-        </div>
-      </section>
-
-      <section class="section" id="hiper-transformer">
-        <div class="section-head">
-          <div><div class="kicker">DailyDialog</div><h2>Hiperparámetros ANTES vs DESPUÉS</h2><p class="muted">Esta es la diapositiva clave de mejora del Colab.</p></div>
-          <span class="badge">Val accuracy +9.9 pts</span>
-        </div>
-        <div class="grid-2">
-          <div class="card">
-            <h3>ANTES — Notebook original</h3>
-            <ul>
-              <li>d_model = 64</li>
-              <li>ff_dim = 128</li>
-              <li>num_layers = 2</li>
-              <li>Learning rate = 0.001 fijo</li>
-              <li>Epochs = 10, sin callbacks</li>
-              <li>Dropout = 0.1, sin label smoothing</li>
-            </ul>
-            <p><span class="metric warn">63,2%</span><br><span class="mini-note">Val accuracy final</span></p>
-          </div>
-          <div class="card">
-            <h3>DESPUÉS — Notebook mejorado</h3>
-            <ul>
-              <li>d_model = 128</li>
-              <li>ff_dim = 256</li>
-              <li>num_layers = 3</li>
-              <li>Learning rate con warmup schedule</li>
-              <li>Epochs = 25 + EarlyStopping patience=5</li>
-              <li>Dropout = 0.15 + Label Smoothing 0.1</li>
-            </ul>
-            <p><span class="metric ok">73,1%</span><br><span class="mini-note">Val accuracy final</span></p>
-          </div>
-        </div>
-        <div class="callout green"><b>Idea fuerza:</b> más capacidad + warmup learning rate + más épocas con Early Stopping permitieron mejorar la validación de 63,2% a 73,1%.</div>
-        <div class="callout yellow"><b>Ojo con el trade-off:</b> Label Smoothing ayudó a subir accuracy, pero BLEU puede bajar si el modelo genera respuestas muy repetidas. Esto se puede revisar con beam search, top-k/top-p o penalización de repetición.</div>
-      </section>
-
-      <section class="section light" id="resultados-transformer">
-        <div class="section-head">
-          <div><div class="kicker">DailyDialog</div><h2>Resultados comparativos BLEU / ROUGE</h2></div>
-          <span class="badge">4 configuraciones</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Config</th><th>BLEU</th><th>ROUGE-1</th><th>ROUGE-2</th><th>ROUGE-L</th><th>Lectura</th></tr></thead>
-            <tbody>
-              <tr><td><b>Base</b></td><td>0.0087</td><td>0.1259</td><td>0.0214</td><td>0.1156</td><td>Punto de comparación inicial.</td></tr>
-              <tr><td><b>h=8</b></td><td>0.0101</td><td>0.1236</td><td>0.0157</td><td>0.1149</td><td>Mejor BLEU.</td></tr>
-              <tr><td><b>d=128</b></td><td>0.0075</td><td>0.1117</td><td>0.0116</td><td>0.1023</td><td>No mejora las métricas principales.</td></tr>
-              <tr><td><b>Optimizada</b></td><td>0.0034</td><td>0.1268</td><td>0.0095</td><td>0.1170</td><td>Mejor ROUGE-L, pero con posible repetición.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <h3>Cómo explicar cada métrica</h3>
-        <div class="grid-4">
-          <div class="card"><h4>BLEU</h4><p>Mide coincidencia de n-gramas entre respuesta generada y respuesta esperada. Es estricto.</p></div>
-          <div class="card"><h4>ROUGE-1</h4><p>Compara coincidencia de palabras individuales.</p></div>
-          <div class="card"><h4>ROUGE-2</h4><p>Compara pares de palabras consecutivas.</p></div>
-          <div class="card"><h4>ROUGE-L</h4><p>Mide la subsecuencia común más larga; captura similitud de estructura.</p></div>
-        </div>
-        <div class="callout"><b>Frase para el profe:</b> “En generación de texto, una respuesta puede ser válida aunque no coincida exactamente con la referencia; por eso BLEU/ROUGE se interpretan junto con ejemplos generados.”</div>
-      </section>
-
-      <section class="section" id="comparacion">
-        <div class="section-head">
-          <div><div class="kicker">Cierre analítico</div><h2>Comparación CNN vs Transformer</h2></div>
-          <span class="badge">No comparar 1:1</span>
-        </div>
-        <div class="grid-2">
-          <div class="card">
-            <h3>CNN Simpsons</h3>
-            <ul>
-              <li>Problema de clasificación cerrada.</li>
-              <li>18 clases conocidas.</li>
-              <li>Métrica principal: accuracy y F1-score.</li>
-              <li>Resultado muy alto: 98,65% accuracy.</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3>Transformer DailyDialog</h3>
-            <ul>
-              <li>Problema de generación abierta.</li>
-              <li>Muchas respuestas posibles para un mismo input.</li>
-              <li>Métricas: BLEU, ROUGE y ejemplos generados.</li>
-              <li>Mejor BLEU reportado: 0.0101.</li>
-            </ul>
-          </div>
-        </div>
-        <div class="callout yellow"><b>Conclusión comparativa:</b> la CNN es más directa y estable porque clasifica categorías fijas. El Transformer es más difícil porque debe generar lenguaje, donde hay varias respuestas válidas.</div>
-      </section>
-
-      <section class="section light" id="integracion">
-        <div class="section-head">
-          <div><div class="kicker">Integración conceptual</div><h2>Cómo usar ambos modelos juntos</h2></div>
-          <span class="badge">Sin fusión técnica compleja</span>
-        </div>
-        <div class="flow">
-          <div class="step"><b>Imagen Simpsons</b><span class="mini-note">entrada visual</span></div>
-          <div class="step"><b>CNN clasifica</b><span class="mini-note">personaje + confianza</span></div>
-          <div class="step"><b>Etiqueta</b><span class="mini-note">ej. Homer Simpson</span></div>
-          <div class="step"><b>Transformer</b><span class="mini-note">genera explicación</span></div>
-          <div class="step"><b>Salida</b><span class="mini-note">texto entendible</span></div>
-        </div>
-        <div class="callout green"><b>Ejemplo:</b> si la CNN detecta “Homer Simpson” con alta confianza, el Transformer puede generar una explicación contextual: “El personaje detectado es Homer; probablemente pertenece a una escena familiar o humorística”.</div>
-        <div class="grid-2">
-          <div class="card"><h3>Valor académico</h3><p>Demuestra visión artificial + lenguaje natural trabajando como módulos separados pero conectados por una decisión conceptual.</p></div>
-          <div class="card"><h3>Valor práctico</h3><p>Permite transformar una predicción técnica en una explicación más entendible para usuarios no expertos.</p></div>
-        </div>
-      </section>
-
-      <section class="section" id="oral">
-        <div class="section-head">
-          <div><div class="kicker">Preparación oral</div><h2>Guion rápido para 10 minutos</h2></div>
-          <span class="badge">No memorizar palabra por palabra</span>
-        </div>
-        <div class="timeline">
-          <div class="time-row"><div class="time">0:00–0:45</div><div class="line-card"><b>Inicio:</b> explica que son dos cuadernos separados: Simpsons y DailyDialog.</div></div>
-          <div class="time-row"><div class="time">0:45–3:40</div><div class="line-card"><b>Cuaderno Simpsons:</b> datos, normalización, augmentation, ReLU/Softmax, arquitecturas comparadas y mejor resultado.</div></div>
-          <div class="time-row"><div class="time">3:40–6:40</div><div class="line-card"><b>Cuaderno DailyDialog:</b> arquitectura Transformer, self-attention, teacher forcing e hiperparámetros antes/después.</div></div>
-          <div class="time-row"><div class="time">6:40–8:15</div><div class="line-card"><b>Resultados:</b> BLEU/ROUGE, trade-off con accuracy y lectura crítica de generación.</div></div>
-          <div class="time-row"><div class="time">8:15–9:20</div><div class="line-card"><b>Comparación:</b> CNN clasifica; Transformer genera. No son métricas equivalentes.</div></div>
-          <div class="time-row"><div class="time">9:20–10:00</div><div class="line-card"><b>Integración y cierre:</b> CNN reconoce imagen, Transformer explica en texto.</div></div>
-        </div>
-      </section>
-
-      <section class="section light" id="preguntas">
-        <div class="section-head">
-          <div><div class="kicker">Repaso final</div><h2>Preguntas tipo profe + respuestas cortas</h2></div>
-          <span class="badge">Para defender</span>
-        </div>
-        <details open><summary>¿Por qué separaste los cuadernos?</summary><p>Porque resuelven problemas distintos: el primero clasifica imágenes de Simpsons y el segundo genera respuestas de diálogo. Separarlos evita mezclar métricas y objetivos.</p></details>
-        <details><summary>¿Por qué la CNN propia fue la mejor?</summary><p>Porque obtuvo el mayor accuracy y F1 weighted en test. Además, su configuración fue estable y el fine-tuning posterior no mejoró el resultado.</p></details>
-        <details><summary>¿Para qué sirve data augmentation?</summary><p>Sirve para crear variaciones realistas de las imágenes y reducir sobreajuste. Ayuda a que el modelo no memorice encuadres específicos.</p></details>
-        <details><summary>¿Por qué se usa Softmax al final?</summary><p>Porque el problema es multiclase. Softmax transforma la salida en probabilidades para cada personaje y permite elegir la clase más probable.</p></details>
-        <details><summary>¿Qué mejoró en el Transformer?</summary><p>Aumentó la capacidad del modelo, se usó warmup learning rate, más épocas con EarlyStopping, dropout mayor y label smoothing. La validación subió de 63,2% a 73,1%.</p></details>
-        <details><summary>¿Por qué el BLEU puede ser bajo aunque la respuesta tenga sentido?</summary><p>Porque BLEU compara coincidencia exacta de n-gramas con una referencia. En diálogos puede haber muchas respuestas válidas que no son iguales a la referencia.</p></details>
-        <details><summary>¿Cuál es la idea de integración conceptual?</summary><p>Usar la CNN para detectar el personaje en una imagen y luego usar el Transformer para generar una explicación o respuesta basada en esa etiqueta.</p></details>
-      </section>
-
-      <section class="section">
-        <div class="section-head">
-          <div><div class="kicker">Resumen ultra corto</div><h2>Qué debes recordar sí o sí</h2></div>
-        </div>
-        <div class="grid-3">
-          <div class="card"><h3>1. CNN</h3><p>Clasifica imágenes. Mejor resultado: CNN propia con 0.9865 accuracy y F1 weighted.</p></div>
-          <div class="card"><h3>2. Transformer</h3><p>Genera respuestas. Mejoró validación con hiperparámetros, pero BLEU/ROUGE deben interpretarse con cuidado.</p></div>
-          <div class="card"><h3>3. Integración</h3><p>Un modelo entiende la imagen y el otro convierte el resultado en texto explicativo.</p></div>
-        </div>
-      </section>
-
-      <p class="footer">Guía de estudio generada desde el PPT ordenado · Diseño HTML/CSS responsive e imprimible.</p>
-    </main>
+<header>
+  <div class="eyebrow">Guía de Estudio</div>
+  <h1>Machine Learning aplicado a <span>CS:GO</span></h1>
+  <p class="subtitle">Predicción de bajas (MatchKills) y supervivencia (Survived) en rondas competitivas · Metodología CRISP-DM</p>
+  <div class="meta-row">
+    <span class="meta-pill">📘 Asignatura: Fundamentos de ML</span>
+    <span class="meta-pill">🧑‍🏫 Docente: Marco Antonio Japke Adriasola</span>
+    <span class="meta-pill">🧩 Sección: FMY0100 – 004D</span>
+    <span class="meta-pill">👥 Diaz · Labra · Moya</span>
   </div>
+</header>
+
+<nav>
+  <a href="#negocio">1. Negocio</a>
+  <a href="#datos">2-3. Datos</a>
+  <a href="#modelado-reg">4. Modelado Regresión</a>
+  <a href="#eval-reg">5. Evaluación Regresión</a>
+  <a href="#modelado-clas">4b. Modelado Clasificación</a>
+  <a href="#eval-clas">5b. Evaluación Clasificación</a>
+  <a href="#despliegue">6. Despliegue</a>
+  <a href="#conclusiones">Conclusiones</a>
+  <a href="#glosario">Glosario</a>
+  <a href="#quiz">Autoevaluación</a>
+</nav>
+
+<main>
+
+  <!-- FASE 1 -->
+  <section id="negocio">
+    <div class="section-tag">Fase 1 · Negocio</div>
+    <h2>Contexto, Hipótesis y <span>KPIs</span></h2>
+    <p class="section-desc">Punto de partida del proyecto: qué problema se resuelve y cómo se va a medir el éxito.</p>
+
+    <div class="card">
+      <h3>Contexto del caso</h3>
+      <p>Valve solicita analizar <strong>79.157 registros</strong> de jugador/ronda extraídos de <strong>7.000+ partidas de CS:GO</strong> (replays), con <strong>29 variables</strong> sobre economía, letalidad, utilidad y posicionamiento.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>🎯 Regresión</h3>
+        <p>Predecir <strong>MatchKills</strong> (bajas totales acumuladas por jugador en la partida).</p>
+      </div>
+      <div class="card">
+        <h3>🏷️ Clasificación</h3>
+        <p>Predecir <strong>Survived</strong> — 0 = murió en la ronda, 1 = vive.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>KPIs de evaluación</h3>
+      <ul>
+        <li><strong>Regresión:</strong> R², MSE y RMSE</li>
+        <li><strong>Clasificación:</strong> Accuracy, Precision, Recall y F1-Score</li>
+        <li><strong>Ambos:</strong> Matriz de Confusión (TN / FP / FN / TP) para el enfoque de clasificación</li>
+      </ul>
+    </div>
+
+    <h3 style="margin-top:28px;">Hipótesis de negocio planteadas</h3>
+    <div class="hyp">
+      <div class="num-badge">1</div>
+      <div><h4>H1 — Ley del Entry</h4><p>Vida corta + bajas tempranas predicen la victoria de ronda.</p></div>
+    </div>
+    <div class="hyp">
+      <div class="num-badge">2</div>
+      <div><h4>H2 — Utility Wins Games</h4><p>El uso de granadas no letales predice mejor la victoria en el bando CT.</p></div>
+    </div>
+    <div class="hyp">
+      <div class="num-badge">3</div>
+      <div><h4>H3 — Factor Lurker</h4><p>Mayor distancia recorrida y bajo FlankKills se asocia a derrota.</p></div>
+    </div>
+    <div class="hyp">
+      <div class="num-badge">4</div>
+      <div><h4>H4 — Economía Crítica</h4><p>Bajo TeamStartingEquipmentValue, la probabilidad de ganar cae drásticamente (rondas eco).</p></div>
+    </div>
+    <div class="hyp">
+      <div class="num-badge">5</div>
+      <div><h4>H5 — Aim Bot</h4><p>% de Headshots es más determinante en mapas de larga distancia.</p></div>
+    </div>
+  </section>
+
+  <!-- FASE 2 Y 3 -->
+  <section id="datos">
+    <div class="section-tag">Fase 2 y 3 · Datos</div>
+    <h2>Comprensión y <span>Preparación</span> de los Datos</h2>
+    <p class="section-desc">Cómo se limpió y transformó el dataset antes de modelar.</p>
+
+    <div class="grid-4">
+      <div class="stat"><div class="num">79.157</div><div class="label">Filas originales</div></div>
+      <div class="stat"><div class="num">29 → 16</div><div class="label">Variables tras selección</div></div>
+      <div class="stat"><div class="num">0</div><div class="label">Nulos tras imputación</div></div>
+      <div class="stat"><div class="num">P99</div><div class="label">Capping de outliers</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:22px;">
+      <div class="card">
+        <h3>Calidad de datos</h3>
+        <ul>
+          <li>Duplicados eliminados con <code>drop_duplicates()</code></li>
+          <li>Nulos numéricos imputados con la mediana</li>
+          <li>Outliers (RoundKills, TimeAlive) tratados con capping al percentil 99 (Winsorización)</li>
+          <li>Corrección de columnas numéricas con formato europeo corrupto (puntos de miles)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Transformación</h3>
+        <ul>
+          <li>Encoding de variables categóricas (Map, Team) a códigos numéricos</li>
+          <li>Feature engineering: Kill_per_Dist, TotalUtility, HSRate</li>
+          <li>StandardScaler: fit solo en train, transform en train y test (evita data leakage)</li>
+          <li>Selección de variables alineada a las hipótesis de negocio</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Análisis exploratorio</h3>
+      <ul>
+        <li>Estadística descriptiva e inferencial sobre variables numéricas</li>
+        <li>Matriz de correlación de Pearson vs. variable objetivo</li>
+        <li>Boxplots y violin plots: inversión económica vs. resultado de ronda</li>
+        <li>Win rate por mapa y análisis de sesgo (skewness)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FASE 4 REGRESION -->
+  <section id="modelado-reg">
+    <div class="section-tag">Fase 4 · Modelado</div>
+    <h2>Modelado de <span>Regresión</span> — MatchKills</h2>
+    <p class="section-desc">16 variables predictoras · Split 80/20 (62.623 train / 15.656 test)</p>
+
+    <div class="grid-3">
+      <div class="model-card">
+        <span class="model-type">Modelo Baseline</span>
+        <h4>Regresión Lineal</h4>
+        <div class="param-block">Modelo lineal múltiple<br>Variables estandarizadas</div>
+        <div class="analysis-label">Análisis</div>
+        <p class="analysis-text">RoundId es el predictor más influyente (coef. 23.33): al ser MatchKills acumulativa, el avance de la partida explica gran parte de la varianza.</p>
+      </div>
+      <div class="model-card">
+        <span class="model-type">No lineal</span>
+        <h4>Árbol de Decisión</h4>
+        <div class="param-block">max_depth = 3<br>random_state = 42</div>
+        <div class="analysis-label">Análisis</div>
+        <p class="analysis-text">Captura interacciones no lineales, pero la profundidad restringida provoca subajuste (underfitting) frente al baseline lineal.</p>
+      </div>
+      <div class="model-card">
+        <span class="model-type">Ensamble Bagging</span>
+        <h4>Random Forest</h4>
+        <div class="param-block">n_estimators = 100<br>max_depth = 5 · random_state = 42</div>
+        <div class="analysis-label">Análisis</div>
+        <p class="analysis-text">Promedia 100 árboles independientes, reduce varianza y logra el mejor equilibrio sesgo–varianza del grupo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 5 REGRESION -->
+  <section id="eval-reg">
+    <div class="section-tag">Fase 5 · Evaluación</div>
+    <h2>Evaluación de Modelos de <span>Regresión</span></h2>
+
+    <div class="winner-badge">
+      <div class="trophy">🏆</div>
+      <h3>Modelo Ganador: Random Forest Regressor</h3>
+      <div class="metrics">R² = 0.6982 · RMSE = 3.41 bajas · MSE = 11.65</div>
+    </div>
+
+    <div class="card">
+      <p>Ensamble de 100 árboles que reduce varianza y estabiliza la predicción, superando marginalmente a la Regresión Lineal (empate técnico, +0.8 pp) y claramente al Árbol individual, limitado por underfitting.</p>
+    </div>
+
+    <div class="card">
+      <h3>Top variables influyentes</h3>
+      <ul>
+        <li><strong>RoundId</strong> (coef. 23.33) — progreso de la partida</li>
+        <li><strong>RoundKills</strong> (coef. 3.42) — letalidad por ronda</li>
+        <li><strong>RoundStartingEquipmentValue</strong> (coef. 1.96) — economía</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FASE 4 CLASIFICACION -->
+  <section id="modelado-clas">
+    <div class="section-tag">Fase 4 · Modelado</div>
+    <h2>Modelado de <span>Clasificación</span> — Survived</h2>
+    <p class="section-desc">0 = murió en la ronda · 1 = sobrevivió · 7 features (granadas, armas, economía, kills) · Split 80/20 estratificado (63.328 train / 15.832 test)</p>
+
+    <div class="grid-3">
+      <div class="model-card">
+        <span class="model-type">Lazy Learner</span>
+        <h4>K-Nearest Neighbors</h4>
+        <div class="param-block">n_neighbors = 5<br>metric = minkowski (p=2)</div>
+        <div class="analysis-label">Análisis</div>
+        <p class="analysis-text">Clasifica según los 5 vecinos más cercanos en el espacio de features escalado. Sensible a la densidad de los datos.</p>
+      </div>
+      <div class="model-card">
+        <span class="model-type">Ensamble Bagging</span>
+        <h4>Random Forest</h4>
+        <div class="param-block">n_estimators = 100<br>max_depth = 7 · n_jobs = -1</div>
+        <div class="analysis-label">Análisis</div>
+        <p class="analysis-text">100 árboles entrenados en paralelo sobre subconjuntos aleatorios; max_depth=7 regulariza y previene sobreajuste.</p>
+      </div>
+      <div class="model-card">
+        <span class="model-type">Ensamble Boosting</span>
+        <h4>Gradient Boosting</h4>
+        <div class="param-block">n_estimators = 100<br>learning_rate = 0.1 · max_depth = 3</div>
+        <div class="analysis-label">Análisis</div>
+        <p class="analysis-text">Árboles secuenciales que corrigen el error residual del anterior; learning_rate controla el ritmo de aprendizaje.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 5 CLASIFICACION -->
+  <section id="eval-clas">
+    <div class="section-tag">Fase 5 · Evaluación</div>
+    <h2>Evaluación y Matriz de Confusión — <span>Clasificación</span></h2>
+
+    <table>
+      <thead>
+        <tr><th>Modelo</th><th>Accuracy</th><th>F1 (Murió)</th><th>F1 (Sobrevivió)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>K-Nearest Neighbors</td><td>63.54%</td><td>0.71</td><td>0.52</td></tr>
+        <tr><td>Random Forest</td><td>67.19%</td><td>0.74</td><td>0.54</td></tr>
+        <tr class="highlight"><td>Gradient Boosting 🏆</td><td>67.44%</td><td>0.75</td><td>0.53</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--gray-light);font-size:0.85rem;margin-top:-14px;margin-bottom:24px;">Soporte total de prueba: 15.832 registros (Clase 0: 9.443 · Clase 1: 6.389)</p>
+
+    <div class="grid-2">
+      <div class="glossary-item"><div class="term">Accuracy</div><div class="def">Proporción total de predicciones correctas.</div></div>
+      <div class="glossary-item"><div class="term">Precision</div><div class="def">De lo predicho como positivo, cuánto era real.</div></div>
+      <div class="glossary-item"><div class="term">Recall</div><div class="def">De los positivos reales, cuántos se detectaron.</div></div>
+      <div class="glossary-item"><div class="term">F1-Score</div><div class="def">Media armónica entre Precision y Recall.</div></div>
+    </div>
+
+    <div class="confusion-wrap">
+      <h3>Matriz de Confusión — Random Forest</h3>
+      <div class="confusion-grid">
+        <div class="cmatrix-cell tn">
+          <div class="val">7.538</div>
+          <div class="name">Verdadero Negativo</div>
+          <div class="desc">Predijo muerte, era muerte</div>
+        </div>
+        <div class="cmatrix-cell fp">
+          <div class="val">1.905</div>
+          <div class="name">Falso Positivo</div>
+          <div class="desc">Predijo vida, era muerte</div>
+        </div>
+        <div class="cmatrix-cell fn">
+          <div class="val">3.289</div>
+          <div class="name">Falso Negativo</div>
+          <div class="desc">Predijo muerte, era vida</div>
+        </div>
+        <div class="cmatrix-cell tp">
+          <div class="val">3.100</div>
+          <div class="name">Verdadero Positivo</div>
+          <div class="desc">Predijo vida, era vida</div>
+        </div>
+      </div>
+      <p style="margin-top:16px;color:#c9c9c9;font-size:0.9rem;">Recall clase 0 (Murió): <strong style="color:var(--yellow);">80%</strong> · Recall clase 1 (Sobrevivió): <strong style="color:var(--yellow);">49%</strong></p>
+    </div>
+
+    <div class="winner-badge">
+      <div class="trophy">🏆</div>
+      <h3>Modelo Ganador: Gradient Boosting Classifier</h3>
+      <div class="metrics">Accuracy = 67.44% · F1 (Murió) = 0.75 · Recall (Murió) = 82%</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="conclusion-card">
+        <div class="icon">↻</div>
+        <div><h4>Aprendizaje secuencial</h4><p>Cada árbol corrige los errores residuales del anterior, reduciendo el sesgo de forma progresiva y controlada.</p></div>
+      </div>
+      <div class="conclusion-card">
+        <div class="icon">＋</div>
+        <div><h4>Mayor exactitud global</h4><p>Supera a KNN (63.54%) y a Random Forest (67.19%), alcanzando 67.44% de accuracy en el set de prueba.</p></div>
+      </div>
+      <div class="conclusion-card">
+        <div class="icon">⚖</div>
+        <div><h4>Mejor equilibrio Precision–Recall</h4><p>F1-Score de 0.75 en la clase mayoritaria (Murió), el más alto de los tres algoritmos comparados.</p></div>
+      </div>
+      <div class="conclusion-card">
+        <div class="icon">〜</div>
+        <div><h4>Captura relaciones no lineales</h4><p>Modela interacciones complejas entre economía de equipo, uso de granadas y letalidad en combate.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 6 -->
+  <section id="despliegue">
+    <div class="section-tag">Fase 6 · Despliegue</div>
+    <h2>Simuladores Interactivos en <span>Google Colab</span></h2>
+    <p class="section-desc">Ambos modelos ganadores se integraron en formularios interactivos (@param) para inferencia en tiempo real, sin requerir conocimientos de programación.</p>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h5>Capturar entradas</h5><p>Formulario con sliders y números (@param) recoge las características de la nueva ronda.</p></div>
+      <div class="step"><div class="step-num">2</div><h5>Empaquetar vector</h5><p><code>np.array([[valores]])</code> respeta el orden exacto de las columnas usadas en el entrenamiento.</p></div>
+      <div class="step"><div class="step-num">3</div><h5>Escalar</h5><p><code>scaler.transform()</code> aplica la misma media/desviación del entrenamiento (sin nuevo fit).</p></div>
+      <div class="step"><div class="step-num">4</div><h5>Predecir</h5><p>El modelo ganador genera la predicción final y, en clasificación, la probabilidad asociada.</p></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="simulator-card">
+        <h4>Simulador de Regresión (MatchKills)</h4>
+        <div class="model-active">Modelo activo: Random Forest Regressor</div>
+        <p>Entradas: economía, granadas, distancia, headshots, RoundId</p>
+        <p>Salida: número estimado de bajas totales (MatchKills)</p>
+        <div class="output-example">Predicción: 8.4 bajas estimadas en la partida</div>
+      </div>
+      <div class="simulator-card">
+        <h4>Simulador de Clasificación (Survived)</h4>
+        <div class="model-active">Modelo activo: Gradient Boosting Classifier</div>
+        <p>Entradas: granadas, armas, equipamiento, kills en la ronda</p>
+        <p>Salida: predict() (0/1) + predict_proba() (% de confianza)</p>
+        <div class="output-example">[SOBREVIVE] — Confianza: 71.30%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONCLUSIONES -->
+  <section id="conclusiones">
+    <div class="section-tag">Cierre</div>
+    <h2>Conclusiones <span>Generales</span></h2>
+
+    <div class="conclusion-card">
+      <div class="icon">1</div>
+      <div><h4>Preprocesamiento como pilar del proyecto</h4><p>La imputación por mediana, el capping de outliers y el StandardScaler (fit solo en train) fueron determinantes para evitar data leakage y lograr convergencia estable en ambos enfoques.</p></div>
+    </div>
+    <div class="conclusion-card">
+      <div class="icon">2</div>
+      <div><h4>Regresión: empate técnico Lineal vs. Random Forest</h4><p>MatchKills se explica mayormente por el avance temporal de la ronda (RoundId), lo que favorece un comportamiento casi lineal; Random Forest gana por robustez (R²=0.698, RMSE=3.41).</p></div>
+    </div>
+    <div class="conclusion-card">
+      <div class="icon">3</div>
+      <div><h4>Clasificación: los ensambles superan a KNN</h4><p>Random Forest y Gradient Boosting (67%+ accuracy) superan claramente a KNN (63.5%), al capturar de mejor forma las relaciones no lineales de la dinámica competitiva.</p></div>
+    </div>
+    <div class="conclusion-card">
+      <div class="icon">4</div>
+      <div><h4>Despliegue funcional y validado</h4><p>Ambos simuladores interactivos (Colab @param) integran el pipeline completo — escalador + modelo ganador — habilitando inferencia en tiempo real para analistas y equipos de scouting.</p></div>
+    </div>
+  </section>
+
+  <!-- GLOSARIO -->
+  <section id="glosario">
+    <div class="section-tag">Repaso rápido</div>
+    <h2>Glosario de <span>Términos Clave</span></h2>
+    <div class="grid-2">
+      <div class="glossary-item"><div class="term">CRISP-DM</div><div class="def">Metodología estándar de minería de datos con 6 fases: negocio, datos, preparación, modelado, evaluación y despliegue.</div></div>
+      <div class="glossary-item"><div class="term">Data Leakage</div><div class="def">Fuga de información del set de test hacia el entrenamiento; se evita haciendo fit del scaler solo en train.</div></div>
+      <div class="glossary-item"><div class="term">Winsorización / Capping</div><div class="def">Técnica que limita valores extremos (outliers) a un percentil determinado, aquí el P99.</div></div>
+      <div class="glossary-item"><div class="term">Overfitting / Underfitting</div><div class="def">Sobreajuste: el modelo memoriza el train y generaliza mal. Subajuste: el modelo es demasiado simple para capturar el patrón.</div></div>
+      <div class="glossary-item"><div class="term">Ensamble Bagging</div><div class="def">Combina múltiples modelos entrenados en paralelo sobre subconjuntos aleatorios (ej. Random Forest) para reducir varianza.</div></div>
+      <div class="glossary-item"><div class="term">Ensamble Boosting</div><div class="def">Combina modelos secuenciales donde cada uno corrige los errores del anterior (ej. Gradient Boosting) para reducir sesgo.</div></div>
+      <div class="glossary-item"><div class="term">R² (Coef. de determinación)</div><div class="def">Proporción de la varianza de la variable objetivo explicada por el modelo (0 a 1, más alto es mejor).</div></div>
+      <div class="glossary-item"><div class="term">RMSE</div><div class="def">Raíz del error cuadrático medio; mide el error promedio en las mismas unidades que la variable objetivo.</div></div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz">
+    <div class="section-tag">Ponte a prueba</div>
+    <h2>Autoevaluación <span>Rápida</span></h2>
+    <p class="section-desc">Haz clic en "Ver respuesta" para comprobar lo que sabes.</p>
+
+    <div class="quiz-item">
+      <div class="q">1. ¿Cuál fue el modelo ganador para predecir MatchKills y con qué métrica R²?</div>
+      <button class="toggle-ans" onclick="this.nextElementSibling.classList.toggle('show')">Ver respuesta</button>
+      <div class="ans">Random Forest Regressor, con R² = 0.6982 y RMSE = 3.41 bajas.</div>
+    </div>
+
+    <div class="quiz-item">
+      <div class="q">2. ¿Por qué RoundId es el predictor más influyente en el modelo de regresión?</div>
+      <button class="toggle-ans" onclick="this.nextElementSibling.classList.toggle('show')">Ver respuesta</button>
+      <div class="ans">Porque MatchKills es una variable acumulativa: a medida que avanza la partida (mayor RoundId), naturalmente se acumulan más bajas, explicando gran parte de la varianza.</div>
+    </div>
+
+    <div class="quiz-item">
+      <div class="q">3. ¿Qué modelo ganó en la tarea de clasificación (Survived) y por qué?</div>
+      <button class="toggle-ans" onclick="this.nextElementSibling.classList.toggle('show')">Ver respuesta</button>
+      <div class="ans">Gradient Boosting Classifier, con 67.44% de accuracy y F1=0.75 en la clase "Murió", por su aprendizaje secuencial que corrige errores residuales y captura relaciones no lineales.</div>
+    </div>
+
+    <div class="quiz-item">
+      <div class="q">4. ¿Qué técnica se usó para evitar el data leakage al escalar los datos?</div>
+      <button class="toggle-ans" onclick="this.nextElementSibling.classList.toggle('show')">Ver respuesta</button>
+      <div class="ans">StandardScaler con fit() aplicado únicamente sobre el conjunto de entrenamiento (train), y transform() aplicado a train y test.</div>
+    </div>
+
+    <div class="quiz-item">
+      <div class="q">5. En la matriz de confusión de Random Forest, ¿qué representa un Falso Negativo?</div>
+      <button class="toggle-ans" onclick="this.nextElementSibling.classList.toggle('show')">Ver respuesta</button>
+      <div class="ans">El modelo predijo que el jugador moriría (0), pero en realidad sobrevivió (1). En el caso analizado fueron 3.289 registros.</div>
+    </div>
+
+    <div class="quiz-item">
+      <div class="q">6. ¿Qué diferencia hay entre Bagging (Random Forest) y Boosting (Gradient Boosting)?</div>
+      <button class="toggle-ans" onclick="this.nextElementSibling.classList.toggle('show')">Ver respuesta</button>
+      <div class="ans">Bagging entrena múltiples árboles en paralelo sobre subconjuntos aleatorios para reducir varianza. Boosting entrena árboles secuenciales donde cada uno corrige el error residual del anterior, reduciendo el sesgo.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Guía de estudio generada a partir de la presentación <span class="yellow-dot">·</span> FMY0100 — Evaluación Final Transversal <span class="yellow-dot">·</span> Fundamentos de Machine Learning
+</footer>
+
 </body>
 </html>
